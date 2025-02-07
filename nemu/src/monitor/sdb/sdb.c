@@ -19,10 +19,13 @@
 #include <readline/history.h>
 #include "sdb.h"
 #include <utils.h>
-/* to use strtoull, need stdlib.h; to use uint64_t, need stdint.h. all included in common.h */
+/* to use strto?, need stdlib.h; to use uint?_t, need stdint.h. all included in common.h */
 #include <common.h>
-/* for trouble shoting */
+/* for trouble shooting */
 #include <errno.h>
+#include <limits.h>
+/* for cmd_x to use vaddr_read */
+#include <memory/vaddr.h>
 
 static int is_batch_mode = false;
 
@@ -64,6 +67,8 @@ static int cmd_si(char *args);
 
 static int cmd_info(char *args);
 
+static int cmd_x(char *args);
+
 static struct {
   const char *name;
   const char *description;
@@ -76,7 +81,8 @@ static struct {
   /* TODO: Add more commands */
   { "si", "usage: si [N]. Let the program pause after executing N instructions in a single step, when N is not given, the default is 1", cmd_si },
 	{ "info", "usage: info (r,w). Print register or watchpoint status", cmd_info },
-
+  { "x", "usage: x N EXPR. Evaluate the expression EXPR, use the result as the starting memory address, and output N sequential 4 bytes in hexadecimal.", cmd_x },
+	
 };
 
 #define NR_CMD ARRLEN(cmd_table)
@@ -163,6 +169,55 @@ static int cmd_info(char *args) {
 	}
 
 	fprintf(stderr, "Warning: Unknown SUBCMD: \"%s\"\n", arg);
+	return 0;
+}
+
+#define LEN 4
+static int cmd_x(char *args) {
+	/* extract the first and the second argument, ignore the remaining */
+	char *arg1 = strtok(NULL, " ");
+	char *arg2 = strtok(NULL, " ");
+
+	if (arg1 == NULL) {
+		fprintf(stderr, "Warning: Missing argument N\n");
+		return 0;
+	}
+	if (arg2 == NULL) {
+		fprintf(stderr, "Warning: Missing argument EXPR\n");
+		return 0;
+	}
+
+	/* parse the first argument to int */
+  char *endptr;
+	errno = 0; // reset errno
+	// the max N is 33554432, by CONFIG_MSIZE / 4
+	long tmp = strtol(arg1, &endptr, 10); // 10 for decimal
+	
+	// arg1 error handling
+	if (errno != 0 || *endptr != '\0' || tmp < INT_MIN || tmp > INT_MAX) {
+    fprintf(stderr, "Warning: Invalid number N(out of int bound or contains non-numeric character)\n");
+    return 0;
+  }	
+	int N = (int)tmp;
+
+	/* as for now, treat the second argument as hexadecimal value */
+  /* parse the second argument to vaddr_t */
+	errno = 0; // reset errno
+	unsigned long tmp2 = strtoul(arg2, &endptr, 0); // 0 for hexadecimal
+	if (errno != 0 || *endptr != '\0' || tmp2 > UINT32_MAX) {
+    fprintf(stderr, "Warning: Invalid uint32_t (hex) input \"%s\"(out of word_t bound or contains invalid character\n", arg2);
+    return 0;
+  }	
+	vaddr_t addr = (vaddr_t)tmp2;
+
+	/* scan N 4-byte memory began at addr */
+	printf("%s:", arg2);
+	for (int i = 0; i < N; ++ i) {
+		word_t val = vaddr_read(addr, LEN);
+		addr += LEN;
+		printf(" 0x%" PRIx32, val);
+	}
+	printf("\n");
 	return 0;
 }
 
