@@ -104,17 +104,18 @@ static int cmd_si(char *args) {
   /* extract the first argument, ignore the remaining */
   char *arg = strtok(NULL, " ");
   uint64_t N;
-
-	if (arg[0] == '-') {
-		fprintf(stderr, "Warning: negative number not allowed, use c(ontinue) instead\n");
-		return 0;
-	}
-
+	
   if (arg == NULL) {
     /* no argument given, N be the default 1 */
     N = 1; 
   }
   else {
+		/* chech for negative number */
+	  if (arg[0] == '-') {
+			fprintf(stderr, "Warning: negative number not allowed, use c(ontinue) instead\n");
+			return 0;
+		}
+ 	
     /* parse the argument to unsigned long long and convert it to uint64_t */
 	  char *endptr;
 		errno = 0; // reset the errno
