@@ -62,6 +62,8 @@ static int cmd_help(char *args);
 
 static int cmd_si(char *args);
 
+static int cmd_info(char *args);
+
 static struct {
   const char *name;
   const char *description;
@@ -72,7 +74,9 @@ static struct {
   { "q", "Exit NEMU", cmd_q },
 
   /* TODO: Add more commands */
-  { "si", "Let the program pause after executing N instructions in a single step, when N is not given, the default is 1", cmd_si },
+  { "si", "usage: si [N]. Let the program pause after executing N instructions in a single step, when N is not given, the default is 1", cmd_si },
+	{ "info", "usage: info (r,w). Print register or watchpoint status", cmd_info },
+
 };
 
 #define NR_CMD ARRLEN(cmd_table)
@@ -112,7 +116,7 @@ static int cmd_si(char *args) {
   else {
 		/* chech for negative number */
 	  if (arg[0] == '-') {
-			fprintf(stderr, "Warning: negative number not allowed, use c(ontinue) instead\n");
+			fprintf(stderr, "Warning: Negative number not allowed, use c(ontinue) instead\n");
 			return 0;
 		}
  	
@@ -136,6 +140,29 @@ static int cmd_si(char *args) {
   }
 
 	cpu_exec(N);
+	return 0;
+}
+
+static int cmd_info(char *args) {
+	/* extract the first argument, ignore the remaining */
+	char *arg = strtok(NULL, " ");
+
+	if (arg == NULL) {
+		fprintf(stderr, "Warning: Please specify the SUBCMD(r(egister) or w(atchpoint))\n");
+		return 0;
+	}
+
+	if (strcmp(arg, "r") == 0) {
+		isa_reg_display();
+		return 0;
+	}
+	else if (strcmp(arg, "w") == 0) {
+		/* TODO: print watchpoint status */
+		
+		return 0;
+	}
+
+	fprintf(stderr, "Warning: Unknown SUBCMD: \"%s\"\n", arg);
 	return 0;
 }
 
