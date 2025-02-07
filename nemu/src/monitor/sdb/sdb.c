@@ -19,6 +19,10 @@
 #include <readline/history.h>
 #include "sdb.h"
 #include <utils.h>
+/* to use strtoull, need stdlib.h; to use uint64_t, need stdint.h. all included in common.h */
+#include <common.h>
+/* for trouble shoting */
+#include <errno.h>
 
 static int is_batch_mode = false;
 
@@ -56,6 +60,8 @@ static int cmd_q(char *args) {
 
 static int cmd_help(char *args);
 
+static int cmd_si(char *args);
+
 static struct {
   const char *name;
   const char *description;
@@ -66,7 +72,7 @@ static struct {
   { "q", "Exit NEMU", cmd_q },
 
   /* TODO: Add more commands */
-
+  { "si", "Let the program pause after executing N instructions in a single step, when N is not given, the default is 1", cmd_si },
 };
 
 #define NR_CMD ARRLEN(cmd_table)
@@ -92,6 +98,39 @@ static int cmd_help(char *args) {
     printf("Unknown command '%s'\n", arg);
   }
   return 0;
+}
+
+static int cmd_si(char *args) {
+  /* extract the first argument, ignore the remaining */
+  char *arg = strtok(NULL, " ");
+  uint64_t N;
+
+  if (arg == NULL) {
+    /* no argument given, N be the default 1 */
+    N = 1; 
+  }
+  else {
+    /* parse the argument to unsigned long long and convert it to uint64_t */
+	  char *endptr;
+		errno = 0; // reset the errno
+		N = strtoull(arg, &endptr, 10); // 10 for decimal
+
+		// error handling
+		if (errno == ERANGE) {
+			fprintf(stderr, "Error: Overflow or underflow in conversion\n");
+			/* return 0 for not ending the sdb_mainloop, but instead show the error message */
+			return 0;
+		}	
+		
+		if (endptr == arg || *endptr != '\0') {
+			fprintf(stderr, "Error: Invalid input string \"%s\"\n", arg);
+			/* return 0 for not ending the sdb_mainloop, but instead show the error message */
+			return 0;
+		}
+  }
+
+	cpu_exec(N);
+	return 0;
 }
 
 void sdb_set_batch_mode() {
