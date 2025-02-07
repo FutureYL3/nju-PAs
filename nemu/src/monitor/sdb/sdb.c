@@ -105,6 +105,11 @@ static int cmd_si(char *args) {
   char *arg = strtok(NULL, " ");
   uint64_t N;
 
+	if (arg[0] == '-') {
+		fprintf(stderr, "Warning: negative number not allowed, use c(ontinue) instead\n");
+		return 0;
+	}
+
   if (arg == NULL) {
     /* no argument given, N be the default 1 */
     N = 1; 
@@ -117,13 +122,13 @@ static int cmd_si(char *args) {
 
 		// error handling
 		if (errno == ERANGE) {
-			fprintf(stderr, "Error: Overflow or underflow in conversion\n");
+			fprintf(stderr, "Warning: Overflow or underflow in conversion\n");
 			/* return 0 for not ending the sdb_mainloop, but instead show the error message */
 			return 0;
 		}	
 		
 		if (endptr == arg || *endptr != '\0') {
-			fprintf(stderr, "Error: Invalid input string \"%s\"\n", arg);
+			fprintf(stderr, "Warning: Invalid input string \"%s\"\n", arg);
 			/* return 0 for not ending the sdb_mainloop, but instead show the error message */
 			return 0;
 		}
