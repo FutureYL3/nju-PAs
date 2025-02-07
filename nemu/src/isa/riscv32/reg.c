@@ -33,7 +33,7 @@ void isa_reg_display() {
 		const char *name = regs[i];
 		word_t val = isa_reg_str2val(name, &success);
 		if (success) {
-			printf("%s\t\t" "0x%" PRIx32 "\n", name, val);
+			printf("%s\t\t" "0x%08" PRIx32 "\n", name, val);
 		}
 		else {
 			printf("Error processing \"%s\"\n", name);

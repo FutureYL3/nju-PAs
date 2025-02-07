@@ -215,7 +215,7 @@ static int cmd_x(char *args) {
 	for (int i = 0; i < N; ++ i) {
 		word_t val = vaddr_read(addr, LEN);
 		addr += LEN;
-		printf(" 0x%" PRIx32, val);
+		printf(" 0x%08" PRIx32, val);
 	}
 	printf("\n");
 	return 0;
