@@ -200,7 +200,7 @@ static int cmd_x(char *args) {
   }	
 	int N = (int)tmp;
 
-	/* as for now, treat the second argument as hexadecimal value */
+	/* TODO: as for now, treat the second argument as hexadecimal value */
   /* parse the second argument to vaddr_t */
 	errno = 0; // reset errno
 	unsigned long tmp2 = strtoul(arg2, &endptr, 0); // 0 for hexadecimal
