@@ -39,7 +39,7 @@ static struct rule {
    */
 
   {" +", TK_NOTYPE},    // spaces
-	{"\\d+", TK_DEC},     // decimal number
+	{"[0-9]+", TK_DEC},     // decimal number
 	{"\\(", TK_LPAR},     // left parentheses
 	{"\\)", TK_RPAR},     // right parentheses
 	{"\\*", '*'},         // times
