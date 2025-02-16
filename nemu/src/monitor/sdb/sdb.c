@@ -69,6 +69,8 @@ static int cmd_info(char *args);
 
 static int cmd_x(char *args);
 
+static int cmd_p(char *args);
+
 static struct {
   const char *name;
   const char *description;
@@ -81,8 +83,9 @@ static struct {
   /* TODO: Add more commands */
   { "si", "usage: si [N]. Let the program pause after executing N instructions in a single step, when N is not given, the default is 1", cmd_si },
 	{ "info", "usage: info (r,w). Print register or watchpoint status", cmd_info },
-  { "x", "usage: x N EXPR. Evaluate the expression EXPR, use the result as the starting memory address, and output N sequential 4 bytes in hexadecimal.", cmd_x },
-	
+  { "x", "usage: x N EXPR. Evaluate the expression EXPR, use the result as the starting memory address, and output N sequential 4 bytes in hexadecimal", cmd_x },
+  { "p", "usage: p EXPR. Evaluate the expression EXPR and print out its value", cmd_p },
+
 };
 
 #define NR_CMD ARRLEN(cmd_table)
@@ -218,6 +221,24 @@ static int cmd_x(char *args) {
 		printf(" 0x%08" PRIx32, val);
 	}
 	printf("\n");
+	return 0;
+}
+
+static int cmd_p(char *args) {
+	if (args == NULL) {
+		fprintf(stderr, "Warning: Missing argument EXPR\n");
+		return 0;
+	}
+
+	word_t val;
+	bool success;
+	val = expr(args, &success);
+	if (!success) {
+		fprintf(stderr, "Failed to evaluate expr %s\n", args);
+		return 0;
+	}
+	
+	printf("The value is %u\n", val);
 	return 0;
 }
 
