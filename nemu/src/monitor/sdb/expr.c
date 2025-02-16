@@ -224,7 +224,7 @@ static word_t eval(int p, int q, bool *success) {
 	  while (tokens[p].str[nr_str] != 0)  nr_str++;
     printf("nr_str of %s is %d\n", tokens[p].str, nr_str);
 
-		for (int i = nr_str - 1; i >= 0; ++ i) {
+		for (int i = nr_str - 1; i >= 0; -- i) {
 			val += (tokens[p].str[i] - 48) * mul;
 			mul *= 10;
 		}
