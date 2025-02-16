@@ -83,9 +83,9 @@ static bool make_token(char *e) {
   int i;
   regmatch_t pmatch;
 
-  for (int i = 0; i < NR_REGEX; ++ i) {
-    printf("rule[%d] with regex %s type %d\n", i, rules[i].regex, rules[i].token_type);
-  }
+  // for (int i = 0; i < NR_REGEX; ++ i) {
+  //   printf("rule[%d] with regex %s type %d\n", i, rules[i].regex, rules[i].token_type);
+  // }
 
   nr_token = 0;
 
@@ -222,6 +222,7 @@ static word_t eval(int p, int q, bool *success) {
 		int mul = 1;
 	  int nr_str = 0;
 	  while (tokens[p].str[nr_str] != 0)  nr_str++;
+    printf("nr_str of %s is %d\n", tokens[p].str, nr_str);
 
 		for (int i = nr_str - 1; i >= 0; ++ i) {
 			val += (tokens[p].str[i] - 48) * mul;
