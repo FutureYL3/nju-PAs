@@ -155,7 +155,7 @@ static bool make_token(char *e) {
 				for (int j = 0; j < substr_len; ++ j) {
 					val[j] = *(substr_start + j);
 				}
-			  printf("find token %s, type %d\n", val, rules[i].token_type);	
+			  // printf("find token %s, type %d\n", val, rules[i].token_type);	
 
         break;
       }
@@ -167,10 +167,10 @@ static bool make_token(char *e) {
     }
   }
 
-	printf("make token finished\n");
-	for (int j = 0; j < nr_token; ++ j) {
-		printf("token[%d] has type %d, str %s\n", j, tokens[j].type, tokens[j].str);
-	}
+	// printf("make token finished\n");
+	// for (int j = 0; j < nr_token; ++ j) {
+	// 	printf("token[%d] has type %d, str %s\n", j, tokens[j].type, tokens[j].str);
+	// }
 
   return true;
 }
@@ -222,14 +222,14 @@ static word_t eval(int p, int q, bool *success) {
 		int mul = 1;
 	  int nr_str = 0;
 	  while (tokens[p].str[nr_str] != 0)  nr_str++;
-    printf("nr_str of %s is %d\n", tokens[p].str, nr_str);
+    // printf("nr_str of %s is %d\n", tokens[p].str, nr_str);
 
 		for (int i = nr_str - 1; i >= 0; -- i) {
 			val += (tokens[p].str[i] - 48) * mul;
 			mul *= 10;
 		}
 		
-		printf("hit number, index is %d, value is %u\n", p, val);
+		// printf("hit number, index is %d, value is %u\n", p, val);
 		*success = true;
 		return val;		
   }
