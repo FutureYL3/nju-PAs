@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
 
     gen_rand_expr();
     buf[len] = '\0';
-    printf("Expr generation round %d done, %s was generated\n", i+1, buf);
+    // printf("Expr generation round %d done, %s was generated\n", i+1, buf);
 
     sprintf(code_buf, code_format, buf);
 

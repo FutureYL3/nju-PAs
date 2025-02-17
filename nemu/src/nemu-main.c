@@ -15,21 +15,49 @@
 
 #include <common.h>
 
+#include "/home/yl/ics2022/nemu/src/monitor/sdb/sdb.h"
+
 void init_monitor(int, char *[]);
 void am_init_monitor();
 void engine_start();
 int is_exit_status_bad();
 
 int main(int argc, char *argv[]) {
-  /* Initialize the monitor. */
-#ifdef CONFIG_TARGET_AM
-  am_init_monitor();
-#else
-  init_monitor(argc, argv);
-#endif
+//   /* Initialize the monitor. */
+// #ifdef CONFIG_TARGET_AM
+//   am_init_monitor();
+// #else
+//   init_monitor(argc, argv);
+// #endif
 
-  /* Start engine. */
-  engine_start();
+//   /* Start engine. */
+//   engine_start();
 
-  return is_exit_status_bad();
+//   return is_exit_status_bad();
+
+  FILE *fp = fopen("/home/yl/input", "r");
+  assert(fp != NULL);
+  word_t expected = 0;
+  char buf[65536 + 100] = {0};
+  char exp[65536] = {0};
+  int count = 0;
+  while (fgets(buf, sizeof(buf), fp) != NULL) {
+    if (sscanf(buf, "%u %[^\n]", &expected, exp) == 2) {
+      printf("Number: %u, String: %s\n", expected, exp);
+    }
+    
+    bool success = false;
+    word_t actual = expr(exp, &success);
+    if (success) {
+      if (actual == expected) {
+        count++;
+        printf("Match!!\n");
+      } else {
+        printf("Don't Match\n");
+      }
+    } else {
+      printf("evaluation failed\n");
+    }
+  }
+  printf("Total match: %d/%d\n", count, 100);
 }
