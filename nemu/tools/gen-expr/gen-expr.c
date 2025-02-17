@@ -67,12 +67,16 @@ static void gen_rand_op() {
   }
 }
 
-static void gen_rand_expr() {
+static void gen_rand_expr(int depth) {
+  if (depth > 100) {
+    gen_num();
+    return;
+  }
   switch (choose(4)) {
     case 0: gen_num(); break;
-    case 1: gen('('); gen_rand_expr(); gen(')'); break;
-    case 2: gen_rand_expr(); gen_rand_op(); gen_rand_expr(); break;
-    default: gen(' '); gen_rand_expr(); gen(' '); break; // randomly generate space
+    case 1: gen('('); gen_rand_expr(depth + 1); gen(')'); break;
+    case 2: gen_rand_expr(depth + 1); gen_rand_op(); gen_rand_expr(depth + 1); break;
+    default: gen(' '); gen_rand_expr(depth + 1); gen(' '); break; // randomly generate space
   }
 }
 
@@ -90,7 +94,7 @@ int main(int argc, char *argv[]) {
     memset(code_buf, 0, sizeof(code_buf));
     len = 0;
 
-    gen_rand_expr();
+    gen_rand_expr(1);
     buf[len] = '\0';
     // printf("Expr generation round %d done, %s was generated\n", i+1, buf);
 

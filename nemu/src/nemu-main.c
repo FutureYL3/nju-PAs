@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
 
 //   return is_exit_status_bad();
 
-  FILE *fp = fopen("/home/yl/input", "r");
+  FILE *fp = fopen("/home/yl/ics2022/nemu/tools/gen-expr/input", "r");
   assert(fp != NULL);
   word_t expected = 0;
   char buf[65536 + 100] = {0};
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
       printf("evaluation failed at %s\n", exp);
     }
   }
-  printf("Total match: %d/%d\n", count, 100);
+  printf("Total match: %d/%d\n", count, 9359);
   fclose(fp);
   return 0;
 }
