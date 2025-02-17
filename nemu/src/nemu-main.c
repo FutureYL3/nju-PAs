@@ -51,12 +51,12 @@ int main(int argc, char *argv[]) {
     if (success) {
       if (actual == expected) {
         count++;
-        printf("Match!!\n");
+        printf("Match!! expected is %u, actula is %u\n", expected, actual);
       } else {
-        printf("Don't Match\n");
+        printf("Don't Match. expected is %u, actula is %u\n", expected, actual);
       }
     } else {
-      printf("evaluation failed\n");
+      printf("evaluation failed at %s\n", exp);
     }
   }
   printf("Total match: %d/%d\n", count, 100);
