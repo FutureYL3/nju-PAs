@@ -51,9 +51,9 @@ int main(int argc, char *argv[]) {
     if (success) {
       if (actual == expected) {
         count++;
-        printf("Match!! expected is %u, actula is %u\n", expected, actual);
+        printf("Match!! expected is %u, actual is %u\n", expected, actual);
       } else {
-        printf("Don't Match. expected is %u, actula is %u\n", expected, actual);
+        printf("Don't Match. expected is %u, actual is %u\n", expected, actual);
       }
     } else {
       printf("evaluation failed at %s\n", exp);
