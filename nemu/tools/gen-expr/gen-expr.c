@@ -40,10 +40,24 @@ static int choose(int n) {
 }
 
 static void gen_num() {
-  /* The random number ranges from 1 to 9 */
-  buf[len++] = (char) (choose(9) + 1 + 48); // avoid 0-start number, generate number from 1-9
-  // buf[len++] = (char) (choose(10) + 48); 
-  buf[len++] = 'U'; // add U appendix to ensure unsigned operation
+	switch (choose(3)) {
+		case 0:
+  		/* The random number ranges from 1 to 9 */
+  		buf[len++] = (char) (choose(9) + 1 + 48); // avoid 0-start number, generate number from 1-9
+  		// buf[len++] = (char) (choose(10) + 48); 
+  		buf[len++] = 'U'; // add U appendix to ensure unsigned operation
+			break;
+		case 1:
+			buf[len++] = (char) (choose(9) + 1 + 48);
+			buf[len++] = (char) (choose(10) + 48);
+			buf[len++] = 'U';
+			break;
+		case 2:
+			buf[len++] = (char) (choose(9) + 1 + 48);
+			buf[len++] = (char) (choose(10) + 48);
+			buf[len++] = (char) (choose(10) + 48);
+			buf[len++] = 'U';
+			break;
 }
 
 static void gen(char c) {
