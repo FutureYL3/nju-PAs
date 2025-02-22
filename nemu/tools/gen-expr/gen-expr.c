@@ -58,6 +58,7 @@ static void gen_num() {
 			buf[len++] = (char) (choose(10) + 48);
 			buf[len++] = 'U';
 			break;
+	}
 }
 
 static void gen(char c) {
