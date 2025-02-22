@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
       printf("evaluation failed at %s\n", exp);
     }
   }
-  printf("Total match: %d/%d\n", count, 9359);
+  printf("Total match: %d/%d\n", count, 9284);
   fclose(fp);
   return 0;
 }
