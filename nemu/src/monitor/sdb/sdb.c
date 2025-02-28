@@ -205,13 +205,19 @@ static int cmd_x(char *args) {
 
 	/* TODO: as for now, treat the second argument as hexadecimal value */
   /* parse the second argument to vaddr_t */
-	errno = 0; // reset errno
-	unsigned long tmp2 = strtoul(arg2, &endptr, 0); // 0 for hexadecimal
-	if (errno != 0 || *endptr != '\0' || tmp2 > UINT32_MAX) {
-    fprintf(stderr, "Warning: Invalid uint32_t (hex) input \"%s\"(out of word_t bound or contains invalid character\n", arg2);
-    return 0;
-  }	
-	vaddr_t addr = (vaddr_t)tmp2;
+	// errno = 0; // reset errno
+	// unsigned long tmp2 = strtoul(arg2, &endptr, 0); // 0 for hexadecimal
+	// if (errno != 0 || *endptr != '\0' || tmp2 > UINT32_MAX) {
+    // fprintf(stderr, "Warning: Invalid uint32_t (hex) input \"%s\"(out of word_t bound or contains invalid character\n", arg2);
+    // return 0;
+  // }	
+	// vaddr_t addr = (vaddr_t)tmp2;
+	bool expr_success = false;
+	vaddr_t addr = (vaddr_t) expr(arg2, &expr_success);
+	if (!expr_success) {
+		fprintf(stderr, "Failed to evaluate expr %s\n", arg2);
+		return 0;
+	}
 
 	/* scan N 4-byte memory began at addr */
 	printf("%s:", arg2);

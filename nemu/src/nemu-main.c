@@ -30,11 +30,12 @@ int main(int argc, char *argv[]) {
   init_monitor(argc, argv);
 #endif
 
-//   /* Start engine. */
-//   engine_start();
+   /* Start engine. */
+   engine_start();
 
-//   return is_exit_status_bad();
+   return is_exit_status_bad();
 
+	/* For expr eval testing
   FILE *fp = fopen("/home/yl/ics2022/nemu/tools/gen-expr/input", "r");
   assert(fp != NULL);
   word_t expected = 0;
@@ -62,4 +63,5 @@ int main(int argc, char *argv[]) {
   printf("Total match: %d/%d\n", count, 9284);
   fclose(fp);
   return 0;
+	*/
 }
