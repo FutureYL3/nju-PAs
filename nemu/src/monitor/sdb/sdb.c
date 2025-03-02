@@ -213,6 +213,7 @@ static int cmd_x(char *args) {
   // }	
 	// vaddr_t addr = (vaddr_t)tmp2;
 	bool expr_success = false;
+	printf("%s\n", arg2);
 	vaddr_t addr = (vaddr_t) expr(arg2, &expr_success);
 	if (!expr_success) {
 		fprintf(stderr, "Failed to evaluate expr %s\n", arg2);
