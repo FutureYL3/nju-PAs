@@ -284,7 +284,7 @@ static word_t eval(int p, int q, bool *success) {
 				break;	
 			case TK_REG:
 				bool reg_success = false;
-				printf("tokens[p].str = %s\n", tokens[p].str);
+				// printf("tokens[p].str = %s\n", tokens[p].str);
 				val = isa_reg_str2val(tokens[p].str, &reg_success);
 				if (!reg_success) {
 					*success = false;

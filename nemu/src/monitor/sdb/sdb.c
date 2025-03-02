@@ -221,7 +221,7 @@ static int cmd_x(char *args) {
 	}
 
 	/* scan N 4-byte memory began at addr */
-	printf("%s:", arg2);
+	// printf("%s:", arg2);
 	for (int i = 0; i < N; ++ i) {
 		word_t val = vaddr_read(addr, LEN);
 		addr += LEN;
