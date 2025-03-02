@@ -138,6 +138,7 @@ static bool make_token(char *e) {
 						for (int j = 1; j < substr_len; ++ j) { // ignore "$"
 							tokens[nr_token].str[j-1] = *(substr_start + j);
 						}
+						tokens[nr_token].str[substr_len] = '\0';
 						nr_token++;
 						break;
 					case TK_DEC:
