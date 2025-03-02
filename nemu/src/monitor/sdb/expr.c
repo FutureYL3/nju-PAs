@@ -130,7 +130,7 @@ static bool make_token(char *e) {
 						for (int j = 2; j < substr_len; ++ j) { // ignore "0x"
 							tokens[nr_token].str[j-2] = *(substr_start + j);
 						}
-            tokens[nr_token].str[substr_len] = '\0';
+            tokens[nr_token].str[substr_len-2] = '\0';
 						nr_token++;
 						break;	
 					case TK_REG:
@@ -138,7 +138,7 @@ static bool make_token(char *e) {
 						for (int j = 1; j < substr_len; ++ j) { // ignore "$"
 							tokens[nr_token].str[j-1] = *(substr_start + j);
 						}
-						tokens[nr_token].str[substr_len] = '\0';
+						tokens[nr_token].str[substr_len-1] = '\0';
 						nr_token++;
 						break;
 					case TK_DEC:
