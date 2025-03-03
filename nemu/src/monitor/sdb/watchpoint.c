@@ -30,7 +30,7 @@ typedef struct watchpoint {
 static WP wp_pool[NR_WP] = {};
 static WP *head = NULL, *free_ = NULL;
 
-int new_wp(char *EXPR);
+int new_wp(char **EXPR);
 bool free_wp(int NO);
 
 void init_wp_pool() {
@@ -46,7 +46,7 @@ void init_wp_pool() {
 
 /* TODO: Implement the functionality of watchpoint */
 // return the NO of allocated watchpoint, or -1 if failed
-int new_wp(char *EXPR) {
+int new_wp(char **EXPR) {
 	/* free_ equaling NULL indicates no more watchpoints available */
 	if (free_ == NULL)  panic("No more watchpoints can be allocated\n");
 	// manipulate linkedlist free_
@@ -63,12 +63,12 @@ int new_wp(char *EXPR) {
 	}
 
 	// init new_one
-	new_one->EXPR = EXPR;
+	new_one->EXPR = *EXPR;
 
 	bool expr_success = false;
-	new_one->prev_val = expr(EXPR, &expr_success);
+	new_one->prev_val = expr(*EXPR, &expr_success);
 	if (!expr_success) {
-		fprintf(stderr, "Warning: Failed to evaluate %s, make sure it's a valid expression\n", EXPR);
+		fprintf(stderr, "Warning: Failed to evaluate %s, make sure it's a valid expression\n", *EXPR);
 		free_wp(new_one->NO);
 		return -1;
 	}
