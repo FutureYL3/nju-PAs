@@ -125,6 +125,7 @@ void check_for_wp_change() {
 		word_t cur_val = expr(cur->EXPR, &expr_success);
 		if (!expr_success) {
 			fprintf(stderr, "Failed to evaluate EXPR %s at watchpoint NO.%d\n", cur->EXPR, cur->NO);
+			cur = cur->next;
 			continue;
 		}
 
@@ -134,6 +135,7 @@ void check_for_wp_change() {
 			printf("watchpoint change detected: watchpoint NO.%d with EXPR %s\nwith previous value %u and current value %u\n", cur->NO, cur->EXPR, cur->prev_val, cur_val);
 			cur->prev_val = cur_val;
 		}
+		cur = cur->next;
 		// no break for all change detection
 	}
 }
