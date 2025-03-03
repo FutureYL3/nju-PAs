@@ -31,7 +31,7 @@ static int is_batch_mode = false;
 
 void init_regex();
 void init_wp_pool();
-int new_wp(char **EXPR);
+int new_wp(char *EXPR);
 bool free_wp(int NO);
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
@@ -260,7 +260,7 @@ static int cmd_w(char *args) {
 		return 0;
 	}
 
-	int NO = new_wp(&args);	
+	int NO = new_wp(args);	
 	
 	if (NO != -1)
 		printf("Successfully allocate watchpoint NO.%d to watch EXPR %s\n", NO, args);
