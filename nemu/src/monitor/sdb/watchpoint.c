@@ -151,7 +151,7 @@ void wp_display() {
 	printf("NO\tprev value\t\tEXPR\n");
 	WP *cur = head;
 	while (cur != NULL) {
-		printf("%d\t%u\t\t%s\n", cur->NO, cur->prev_val, cur->EXPR);
+		printf("%d\t%u(""0x%08" PRIx32 ")\t\t%s\n", cur->NO, cur->prev_val, cur->prev_val, cur->EXPR);
 		cur = cur->next;
 	}
 }
