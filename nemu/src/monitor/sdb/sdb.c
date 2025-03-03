@@ -65,16 +65,12 @@ static int cmd_q(char *args) {
 }
 
 static int cmd_help(char *args);
-
 static int cmd_si(char *args);
-
 static int cmd_info(char *args);
-
 static int cmd_x(char *args);
-
 static int cmd_p(char *args);
-
 static int cmd_w(char *args);
+static int cmd_d(char *args);
 
 static struct {
   const char *name;
@@ -91,7 +87,7 @@ static struct {
   { "x", "usage: x N EXPR. Evaluate the expression EXPR, use the result as the starting memory address, and output N sequential 4 bytes in hexadecimal", cmd_x },
   { "p", "usage: p EXPR. Evaluate the expression EXPR and print out its value", cmd_p },
 	{ "w", "usage: w EXPR. Watch the value of EXPR and pause the program when its value has changed", cmd_w },
-
+	{ "d", "usage: d N. Delete the watchpoint that is NO.N", cmd_d }
 };
 
 #define NR_CMD ARRLEN(cmd_table)
@@ -270,6 +266,38 @@ static int cmd_w(char *args) {
 
 	return 0;
 }
+
+static int cmd_d(char *args) {
+	if (args == NULL) {
+		fprintf(stderr, "Warning: Missing argument N\n");
+		return 0;
+	}
+
+	char *endptr;
+  errno = 0;
+  long val = strtol(args, &endptr, 10); 
+  if (errno == ERANGE) {
+    fprintf(stderr, "Warning: Argument N overflow or underflow, check your parameter\n");
+    return 0;
+  }
+  if (endptr == args) {
+    fprintf(stderr, "Warning: No digits were found. Please enter a 0~31 integer number\n");
+    return 0;
+  }
+  if (val < 0 || val > 31) {
+    fprintf(stderr, "Warning: Watchpoint numbers are from 0 to 31\n");
+    return 0;
+	}
+
+  int NO = (int) val;
+	if (free_wp(NO)) 
+		printf("Successfully deleted watchpoint NO.%d\n", NO);
+	else
+		printf("Failed to delete watchpoint NO.%d\n", NO);
+
+	return 0;
+}	
+	
 
 void sdb_set_batch_mode() {
   is_batch_mode = true;
