@@ -51,9 +51,9 @@ int new_wp(char **EXPR) {
 	if (free_ == NULL)  panic("No more watchpoints can be allocated\n");
 	// manipulate linkedlist free_
 	WP *new_one = free_;
-	new_one->next = NULL;
 	free_ = free_->next;
-	
+	new_one->next = NULL;
+
 	// manipulate linkedlist head
 	if (head == NULL)  head = new_one;
 	else {
