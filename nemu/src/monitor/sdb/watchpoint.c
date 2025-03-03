@@ -146,3 +146,12 @@ void check_for_wp_change() {
 		// no break for all change detection
 	}
 }
+
+void wp_display() {
+	printf("NO\tprev value\t\tEXPR\n");
+	WP *cur = head;
+	while (cur != NULL) {
+		printf("%d\t%u\t\t%s\n", cur->NO, cur->prev_val, cur->EXPR);
+		cur = cur->next;
+	}
+}

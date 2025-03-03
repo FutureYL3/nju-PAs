@@ -33,6 +33,7 @@ void init_regex();
 void init_wp_pool();
 int new_wp(char *EXPR);
 bool free_wp(int NO);
+void wp_display();
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 static char* rl_gets() {
@@ -172,7 +173,7 @@ static int cmd_info(char *args) {
 	}
 	else if (strcmp(arg, "w") == 0) {
 		/* TODO: print watchpoint status */
-		
+		wp_display();	
 		return 0;
 	}
 
