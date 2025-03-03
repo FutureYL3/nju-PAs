@@ -31,6 +31,8 @@ static int is_batch_mode = false;
 
 void init_regex();
 void init_wp_pool();
+int new_wp(char *EXPR);
+bool free_wp(int NO);
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 static char* rl_gets() {
@@ -71,6 +73,8 @@ static int cmd_x(char *args);
 
 static int cmd_p(char *args);
 
+static int cmd_w(char *args);
+
 static struct {
   const char *name;
   const char *description;
@@ -85,6 +89,7 @@ static struct {
 	{ "info", "usage: info (r,w). Print register or watchpoint status", cmd_info },
   { "x", "usage: x N EXPR. Evaluate the expression EXPR, use the result as the starting memory address, and output N sequential 4 bytes in hexadecimal", cmd_x },
   { "p", "usage: p EXPR. Evaluate the expression EXPR and print out its value", cmd_p },
+	{ "w", "usage: w EXPR. Watch the value of EXPR and pause the program when its value has changed", cmd_w },
 
 };
 
@@ -246,6 +251,22 @@ static int cmd_p(char *args) {
 	}
 	
 	printf("The value is %u\n", val);
+	return 0;
+}
+
+static int cmd_w(char *args) {
+	if (args == NULL) {
+		fprintf(stderr, "Warning: Missing argument EXPR\n");
+		return 0;
+	}
+
+	int NO = new_wp(args);	
+	
+	if (NO != -1)
+		printf("Successfully allocate watchpoint NO.%d to watch EXPR %s\n", NO, args);
+	else
+		printf("Failed to set watchpoint for %s\n", args);
+
 	return 0;
 }
 
