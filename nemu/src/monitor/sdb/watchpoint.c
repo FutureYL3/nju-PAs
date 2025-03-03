@@ -139,7 +139,7 @@ void check_for_wp_change() {
 		// scan and print for all watchpoint changes 
 		if (cur_val != cur->prev_val) {
 			nemu_state.state = NEMU_STOP;
-			printf("watchpoint change detected: watchpoint NO.%d with EXPR %s\nwith previous value %u and current value %u\n", cur->NO, cur->EXPR, cur->prev_val, cur_val);
+			printf("watchpoint change detected: watchpoint NO.%d with EXPR %s\nwith previous value %u(""0x%08" PRIx32 ") and current value %u(""0x%08" PRIx32 ")\n", cur->NO, cur->EXPR, cur->prev_val, cur->prev_val, cur_val, cur_val);
 			cur->prev_val = cur_val;
 		}
 		cur = cur->next;
@@ -148,10 +148,10 @@ void check_for_wp_change() {
 }
 
 void wp_display() {
-	printf("NO\tprev value\t\tEXPR\n");
+	printf("NO\tprev value\t\t\tEXPR\n");
 	WP *cur = head;
 	while (cur != NULL) {
-		printf("%d\t%u(""0x%08" PRIx32 ")\t\t%s\n", cur->NO, cur->prev_val, cur->prev_val, cur->EXPR);
+		printf("%d\t%u(""0x%08" PRIx32 ")\t\t\t%s\n", cur->NO, cur->prev_val, cur->prev_val, cur->EXPR);
 		cur = cur->next;
 	}
 }

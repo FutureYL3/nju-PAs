@@ -251,7 +251,7 @@ static int cmd_p(char *args) {
 		return 0;
 	}
 	
-	printf("The value is %u\n", val);
+	printf("The value is %u(""0x%08" PRIx32 ")\n", val, val);
 	return 0;
 }
 
