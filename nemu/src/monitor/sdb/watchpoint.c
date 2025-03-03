@@ -121,6 +121,7 @@ void check_for_wp_change() {
 	if (head == NULL)  return;
 	WP *cur = head;
 	while (cur != NULL) {
+		printf("check for watchpoint NO.%d EXPR %s\n", cur->NO, cur->EXPR);
 		bool expr_success = false;
 		word_t cur_val = expr(cur->EXPR, &expr_success);
 		if (!expr_success) {
