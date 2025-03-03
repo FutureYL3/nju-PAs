@@ -72,6 +72,7 @@ int new_wp(char **EXPR) {
 		free_wp(new_one->NO);
 		return -1;
 	}
+	printf("added a new watchpoint with NO.%d and EXPR %s\n", new_one->NO, new_one->EXPR);
 	return new_one->NO;
 }	
 
