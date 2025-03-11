@@ -114,9 +114,10 @@ void init_monitor(int argc, char *argv[]) {
   /* Open the log file. */
   init_log(log_file);
 
+#if CONFIG_FTRACE
 	/* Initialize symbol table and string table */
 	init_ftrace(ftrace_elf);
-
+#endif
   /* Initialize memory. */
   init_mem();
 
