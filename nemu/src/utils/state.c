@@ -22,7 +22,7 @@ NEMUState nemu_state = { .state = NEMU_STOP };
 
 int is_exit_status_bad() {
 	/* Print iringbuf content if program ends because of  exception */
-	/*if (nemu_state.halt_ret != 0) { */
+	if (nemu_state.halt_ret != 0) { 
 		int cur = iringbuf_cur_next == 0 ? MAX_IRINGBUF_SIZE - 1 : iringbuf_cur_next - 1;
 		// iringbuf[cur][0] = '-'; iringbuf[cur][1] = '-'; iringbuf[cur][2] = '>';
 		// 150 should be enough
@@ -34,7 +34,7 @@ int is_exit_status_bad() {
 		 	if (i == cur)  printf("--> %s", iringbuf[i]);
 			else  printf("    %s", iringbuf[i]);
 		}
-	/*}*/
+	}
 
   int good = (nemu_state.state == NEMU_END && nemu_state.halt_ret == 0) ||
     (nemu_state.state == NEMU_QUIT);
