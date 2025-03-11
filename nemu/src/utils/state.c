@@ -26,11 +26,14 @@ int is_exit_status_bad() {
 		int cur = iringbuf_cur_next == 0 ? MAX_IRINGBUF_SIZE - 1 : iringbuf_cur_next - 1;
 		// iringbuf[cur][0] = '-'; iringbuf[cur][1] = '-'; iringbuf[cur][2] = '>';
 		// 150 should be enough
-		char temp[150] = {0};
+		/*char temp[150] = {0};
 		strncpy(temp, iringbuf[cur], sizeof(temp));
-		snprintf(iringbuf[cur], sizeof(iringbuf[cur]), "--> %s", temp);
+		snprintf(iringbuf[cur], sizeof(iringbuf[cur]), "--> %s", temp); */
 		printf("\niringbuf trace:\n");
-		for (int i = 0; i < MAX_IRINGBUF_SIZE; ++ i)  printf("%s", iringbuf[i]);
+		for (int i = 0; i < MAX_IRINGBUF_SIZE; ++ i) {
+		 	if (i == cur)  printf("--> %s", iringbuf[i]);
+			else  printf("    %s", iringbuf[i]);
+		}
 	/*}*/
 
   int good = (nemu_state.state == NEMU_END && nemu_state.halt_ret == 0) ||
