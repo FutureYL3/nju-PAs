@@ -95,7 +95,7 @@ static int decode_exec(Decode *s) {
 			if (i == func_entry_count)  panic("can not find function call at pc = " FMT_WORD "\n", s->pc); 
 			char log_str[200];
 			char *p = log_str;
-			for (int j = 0; j < indent_count; ++ j)  p += sprintf(log_str, "  ");
+			for (int j = 0; j < indent_count; ++ j)  p += sprintf(p, "  ");
 			sprintf(p, "call [%s@" FMT_WORD "]", func_name, funcSymbols[i].value);
 
 			fprintf(ftrace_log, FMT_WORD ": %s\n", s->pc, log_str);
