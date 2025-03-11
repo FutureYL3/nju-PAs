@@ -32,7 +32,7 @@ static bool g_print_step = false;
 
 /* for iringbuf */
 #define MAX_IRINGBUF_SIZE 20
-char iringbuf[MAX_IRINGBUF_SIZE][150];
+char iringbuf[MAX_IRINGBUF_SIZE][200];
 int iringbuf_cur_next = 0;
 
 void device_update();
@@ -46,7 +46,7 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
 
 	/* for iringbuf */
-	snprintf(iringbuf[iringbuf_cur_next], sizeof(iringbuf[1]), "    %s\n", _this->logbuf);
+	snprintf(iringbuf[iringbuf_cur_next], sizeof(iringbuf[0]), "    %s\n", _this->logbuf);
 	iringbuf_cur_next = (iringbuf_cur_next + 1) % MAX_IRINGBUF_SIZE;
 
 #ifdef CONFIG_WATCHPOINT
