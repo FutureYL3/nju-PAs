@@ -63,6 +63,7 @@ void ftrace_call_write(word_t pc, word_t dnpc) {
 }
 
 void ftrace_ret_write(word_t pc, word_t dnpc) {
+	indent_count--;
   /* find function name */
   int i;
   char *func_name = NULL;
@@ -79,7 +80,6 @@ void ftrace_ret_write(word_t pc, word_t dnpc) {
   sprintf(p, "ret  [%s]", func_name);
 
   fprintf(ftrace_log, FMT_WORD ": %s\n", pc, log_str);
-  indent_count--;
 }
 
 static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2, word_t *imm, int type) {
