@@ -42,6 +42,46 @@ enum {
 #define immB() do { *imm = SEXT((BITS(i, 11, 8) + (BITS(i, 30, 25) << 4) + (BITS(i, 7, 7) << 10) + (BITS(i, 31, 31) << 11)) << 1, 13); } while (0)
 #define immSI() do { *imm = BITS(i, 24, 20); } while (0)
 
+void ftrace_call_write(word_t pc, word_t dnpc) {
+  /* find function name */
+  int i;
+  char *func_name = NULL;
+  for (i = 0; i < func_entry_count; ++ i) {
+    if (dnpc >= funcSymbols[i].value && dnpc < funcSymbols[i].value + funcSymbols[i].size) {
+      func_name = funcSymbols[i].name;
+      break;
+    }
+  }
+  if (i == func_entry_count)  panic("can not find function call at pc = " FMT_WORD "\n", pc); 
+  char log_str[200];
+  char *p = log_str;
+  for (int j = 0; j < indent_count; ++ j)  p += sprintf(p, "  ");
+  sprintf(p, "call [%s@" FMT_WORD "]", func_name, funcSymbols[i].value);
+
+  fprintf(ftrace_log, FMT_WORD ": %s\n", pc, log_str);
+  indent_count++;
+}
+
+void ftrace_ret_write(word_t pc, word_t dnpc) {
+  /* find function name */
+  int i;
+  char *func_name = NULL;
+  for (i = 0; i < func_entry_count; ++ i) {
+    if (dnpc >= funcSymbols[i].value && dnpc < funcSymbols[i].value + funcSymbols[i].size) {
+      func_name = funcSymbols[i].name;
+      break;
+    }
+  }
+  if (i == func_entry_count)  panic("can not find function call at pc = " FMT_WORD "\n", pc); 
+  char log_str[200];
+  char *p = log_str;
+  for (int j = 0; j < indent_count; ++ j)  p += sprintf(p, "  ");
+  sprintf(p, "ret  [%s]", func_name);
+
+  fprintf(ftrace_log, FMT_WORD ": %s\n", pc, log_str);
+  indent_count--;
+}
+
 static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2, word_t *imm, int type) {
   uint32_t i = s->isa.inst.val;
   int rs1 = BITS(i, 19, 15);
@@ -82,65 +122,11 @@ static int decode_exec(Decode *s) {
 	INSTPAT("??????? ????? ????? 000 ????? 0010011", addi   , I , R(rd) = src1 + imm;);
   INSTPAT("??????? ????? ????? ??? ????? 0010111", auipc  , U , R(rd) = s->pc + imm;);	
 	INSTPAT("??????? ????? ????? ??? ????? 1101111", jal    , J , s->dnpc = s->pc + imm; R(rd) = s->snpc;
-		if (rd == 1) { // calls
-			/* find function name */
-			int i;
-			char *func_name = NULL;
-			for (i = 0; i < func_entry_count; ++ i) {
-				if (s->dnpc >= funcSymbols[i].value && s->dnpc < funcSymbols[i].value + funcSymbols[i].size) {
-					func_name = funcSymbols[i].name;
-					break;
-				}
-			}
-			if (i == func_entry_count)  panic("can not find function call at pc = " FMT_WORD "\n", s->pc); 
-			char log_str[200];
-			char *p = log_str;
-			for (int j = 0; j < indent_count; ++ j)  p += sprintf(p, "  ");
-			sprintf(p, "call [%s@" FMT_WORD "]", func_name, funcSymbols[i].value);
-
-			fprintf(ftrace_log, FMT_WORD ": %s\n", s->pc, log_str);
-			indent_count++;
-		}
+		if (rd == 1)  ftrace_call_write(s->pc, s->dnpc);
 	);
 	INSTPAT("??????? ????? ????? 000 ????? 1100111", jalr   , I , s->dnpc = (imm + src1) & ~1; R(rd) = s->snpc;
-		if (rd == 1) { // calls
-			/* find function name */
-			int i;
-			char *func_name = NULL;
-			for (i = 0; i < func_entry_count; ++ i) {
-				if (s->dnpc >= funcSymbols[i].value && s->dnpc < funcSymbols[i].value + funcSymbols[i].size) {
-					func_name = funcSymbols[i].name;
-					break;
-				}
-			}
-			if (i == func_entry_count)  panic("can not find function call at pc = " FMT_WORD "\n", s->pc); 
-			char log_str[200];
-			char *p = log_str;
-			for (int j = 0; j < indent_count; ++ j)  p += sprintf(p, "  ");
-			sprintf(p, "call [%s@" FMT_WORD "]", func_name, funcSymbols[i].value);
-
-			fprintf(ftrace_log, FMT_WORD ": %s\n", s->pc, log_str);
-			indent_count++;
-		}	
-		else if (rd == 0 && src1 == 1 && imm == 0) {
-			/* find function name */
-			int i;
-			char *func_name = NULL;
-			for (i = 0; i < func_entry_count; ++ i) {
-				if (s->dnpc >= funcSymbols[i].value && s->dnpc < funcSymbols[i].value + funcSymbols[i].size) {
-					func_name = funcSymbols[i].name;
-					break;
-				}
-			}
-			if (i == func_entry_count)  panic("can not find function call at pc = " FMT_WORD "\n", s->pc); 
-			char log_str[200];
-			char *p = log_str;
-			for (int j = 0; j < indent_count; ++ j)  p += sprintf(p, "  ");
-			sprintf(p, "ret  [%s]", func_name);
-
-			fprintf(ftrace_log, FMT_WORD ": %s\n", s->pc, log_str);
-			indent_count--;
-		}
+		if (rd == 1)  ftrace_call_write(s->pc, s->dnpc);
+		else if (rd == 0 && src1 == 1 && imm == 0)  ftrace_ret_write(s->pc, s->dnpc);
 	);
 	INSTPAT("??????? ????? ????? 000 ????? 1100011", beq    , B , if (src1 == src2)  s->dnpc = imm + s->pc;);
 	INSTPAT("??????? ????? ????? 001 ????? 1100011", bne    , B , if (src1 != src2)  s->dnpc = imm + s->pc;);
