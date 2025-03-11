@@ -17,6 +17,14 @@
 #define __CPU_CPU_H__
 
 #include <common.h>
+#include <elf.h>
+
+// 自定义结构体，用于存储函数符号条目
+typedef struct {
+  char *name;          // 符号名（拷贝的字符串）
+  Elf32_Addr value;    // 符号地址
+  Elf32_Word size;     // 符号大小
+} FuncSymbol;
 
 void cpu_exec(uint64_t n);
 

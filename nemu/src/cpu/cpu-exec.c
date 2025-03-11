@@ -17,6 +17,8 @@
 #include <cpu/decode.h>
 #include <cpu/difftest.h>
 #include <locale.h>
+#include <elf.h>
+
 
 /* The assembly code of instructions executed is only output to the screen
  * when the number of instructions executed is less than this value.
@@ -37,6 +39,112 @@ int iringbuf_cur_next = 0;
 
 void device_update();
 void check_for_wp_change();
+
+#define FTRACE_LOG_FILE "/home/yl/ftrace-nemu-log.txt"
+FuncSymbol *funcSymbols = NULL;
+FILE *ftrace_log = NULL;
+int indent_count = 0;
+int func_entry_count = 0;
+void init_ftrace(const char *ftrace_elf) {
+  FILE *fp = fopen(ftrace_elf, "rb");
+  if (!fp)
+    panic("Can not open ftrace_elf file\n"); 
+
+  // 1. 读取 ELF 头部
+  Elf32_Ehdr ehdr;
+  if (fread(&ehdr, 1, sizeof(ehdr), fp) != sizeof(ehdr)) 
+    panic("failed to read elf header\n");
+  if (memcmp(ehdr.e_ident, ELFMAG, SELFMAG) != 0) 
+    panic("Not an ELF file\n");
+  
+  // 2. 读取节区头表
+  Elf32_Shdr *shdrs = malloc(ehdr.e_shentsize * ehdr.e_shnum);
+  if (!shdrs) 
+    panic("malloc section headers failed\n");
+  
+  fseek(fp, ehdr.e_shoff, SEEK_SET);
+  if (fread(shdrs, ehdr.e_shentsize, ehdr.e_shnum, fp) != ehdr.e_shnum) 
+    panic("fread section headers failed\n");
+
+  // 3. 读取节区名称字符串表（用于解析各个节区名称）
+  Elf32_Shdr shstr_hdr = shdrs[ehdr.e_shstrndx];
+  char *shstrtab = malloc(shstr_hdr.sh_size);
+  if (!shstrtab) 
+    panic("malloc shstrtab failed\n");
+
+  fseek(fp, shstr_hdr.sh_offset, SEEK_SET);
+  if (fread(shstrtab, 1, shstr_hdr.sh_size, fp) != shstr_hdr.sh_size) 
+    panic("fread shstrtab failed\n");
+  
+  // 4. 定位符号表节区 (.symtab) 以及它的关联字符串表 (.strtab)
+  Elf32_Shdr *symtab_hdr = NULL;
+  Elf32_Shdr *strtab_hdr = NULL;
+  for (int i = 0; i < ehdr.e_shnum; i++) {
+    char *sec_name = shstrtab + shdrs[i].sh_name;
+    if (strcmp(sec_name, ".symtab") == 0) {
+      symtab_hdr = &shdrs[i];
+      // 符号表关联的字符串表索引存储在 sh_link 字段中
+      strtab_hdr = &shdrs[symtab_hdr->sh_link];
+      break;
+    }
+  }
+  if (!symtab_hdr || !strtab_hdr) 
+    panic("Could not find symbol table or its string table\n");
+  
+  // 5. 读取符号表数据到一个 Elf32_Sym 数组中
+  int num_symbols = symtab_hdr->sh_size / symtab_hdr->sh_entsize;
+  Elf32_Sym *symtab = malloc(symtab_hdr->sh_size);
+  if (!symtab) 
+    panic("malloc symtab failed\n");
+  
+  fseek(fp, symtab_hdr->sh_offset, SEEK_SET);
+  if (fread(symtab, symtab_hdr->sh_entsize, num_symbols, fp) != num_symbols) 
+    panic("fread symtab failed\n");
+  
+  // 6. 读取符号表对应的字符串表数据
+  char *strtab = malloc(strtab_hdr->sh_size);
+  if (!strtab) 
+    panic("malloc strtab failed\n");
+
+  fseek(fp, strtab_hdr->sh_offset, SEEK_SET);
+  if (fread(strtab, 1, strtab_hdr->sh_size, fp) != strtab_hdr->sh_size) 
+    panic("fread strtab failed\n");
+
+  fclose(fp);
+
+  // 7. 筛选出类型为函数（STT_FUNC）的符号条目
+  // 第一遍统计符合条件的符号数量
+  for (int i = 0; i < num_symbols; i++) {
+    if (ELF32_ST_TYPE(symtab[i].st_info) == STT_FUNC)
+    func_entry_count++;
+  }
+
+  // 分配自定义结构体数组，用于存储函数符号
+  funcSymbols = malloc(func_entry_count * sizeof(FuncSymbol));
+  if (!funcSymbols) 
+    panic("malloc funcSymbols failed\n");
+
+  // 第二遍将符号条目存入自定义数组，并解析符号名称（复制字符串）
+  int j = 0;
+  for (int i = 0; i < num_symbols; i++) {
+    if (ELF32_ST_TYPE(symtab[i].st_info) == STT_FUNC) {
+      // 使用 st_name 字段作为偏移量，在符号字符串表中查找名称
+      char *name = strdup(strtab + symtab[i].st_name);
+      if (!name) 
+        panic("strdup failed\n");
+      
+      funcSymbols[j].name = name;
+      funcSymbols[j].value = symtab[i].st_value;
+      funcSymbols[j].size = symtab[i].st_size;
+      j++;
+    }
+  }
+
+	// 打开日志文件
+	ftrace_log = fopen(FTRACE_LOG_FILE, "w");
+	if (!ftrace_log)
+		panic("failed to open ftrace log file\n");
+}
 
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
