@@ -62,13 +62,13 @@ void ftrace_call_write(word_t pc, word_t dnpc) {
   indent_count++;
 }
 
-void ftrace_ret_write(word_t pc, word_t dnpc) {
+void ftrace_ret_write(word_t pc) {
 	indent_count--;
   /* find function name */
   int i;
   char *func_name = NULL;
   for (i = 0; i < func_entry_count; ++ i) {
-    if (dnpc >= funcSymbols[i].value && dnpc < funcSymbols[i].value + funcSymbols[i].size) {
+    if (pc >= funcSymbols[i].value && pc < funcSymbols[i].value + funcSymbols[i].size) {
       func_name = funcSymbols[i].name;
       break;
     }
@@ -122,7 +122,7 @@ static int decode_exec(Decode *s) {
 	INSTPAT("??????? ????? ????? 000 ????? 0010011", addi   , I , R(rd) = src1 + imm);
   INSTPAT("??????? ????? ????? ??? ????? 0010111", auipc  , U , R(rd) = s->pc + imm);	
 	INSTPAT("??????? ????? ????? ??? ????? 1101111", jal    , J , s->dnpc = s->pc + imm; R(rd) = s->snpc; if (rd == 1 && CONFIG_FTRACE)  ftrace_call_write(s->pc, s->dnpc));
-	INSTPAT("??????? ????? ????? 000 ????? 1100111", jalr   , I , s->dnpc = (imm + src1) & ~1; R(rd) = s->snpc; if (rd == 1 && CONFIG_FTRACE)  ftrace_call_write(s->pc, s->dnpc); else if (CONFIG_FTRACE && rd == 0 && BITS(s->isa.inst.val, 19, 15) == 1 && imm == 0)  ftrace_ret_write(s->pc, s->dnpc));
+	INSTPAT("??????? ????? ????? 000 ????? 1100111", jalr   , I , s->dnpc = (imm + src1) & ~1; R(rd) = s->snpc; if (rd == 1 && CONFIG_FTRACE)  ftrace_call_write(s->pc, s->dnpc); else if (CONFIG_FTRACE && rd == 0 && BITS(s->isa.inst.val, 19, 15) == 1 && imm == 0)  ftrace_ret_write(s->pc));
 	INSTPAT("??????? ????? ????? 000 ????? 1100011", beq    , B , if (src1 == src2)  s->dnpc = imm + s->pc);
 	INSTPAT("??????? ????? ????? 001 ????? 1100011", bne    , B , if (src1 != src2)  s->dnpc = imm + s->pc);
 	INSTPAT("??????? ????? ????? 100 ????? 1100011", blt    , B , if ((int32_t) src1 < (int32_t) src2)  s->dnpc = imm + s->pc);
