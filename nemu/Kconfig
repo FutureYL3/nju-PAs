@@ -120,6 +120,10 @@ config WATCHPOINT
 	bool "Enable watchpoint function"
 	default y
 
+config BATCH_MODE
+	bool "Enable batch mode"
+	default n
+
 config CC_ASAN
   depends on MODE_SYSTEM
   bool "Enable address sanitizer"
