@@ -43,12 +43,11 @@ void device_update();
 void check_for_wp_change();
 
 #if CONFIG_FTRACE
-#define FTRACE_LOG_FILE "/home/yl/ftrace-nemu-log.txt"
 FuncSymbol *funcSymbols = NULL;
 FILE *ftrace_log = NULL;
 int indent_count = 0;
 int func_entry_count = 0;
-void init_ftrace(const char *ftrace_elf) {
+void init_ftrace(const char *ftrace_elf, const char *ftrace_log_file) {
   FILE *fp = fopen(ftrace_elf, "rb");
   if (!fp)
     panic("Can not open ftrace_elf file\n"); 
@@ -144,9 +143,13 @@ void init_ftrace(const char *ftrace_elf) {
   }
 
 	// 打开日志文件
-	ftrace_log = fopen(FTRACE_LOG_FILE, "w");
-	if (!ftrace_log)
-		panic("failed to open ftrace log file\n");
+	ftrace_log = stdout;
+	if (ftrace_log_file != NULL) {
+		ftrace_log = fopen(ftrace_log_file, "w");
+		if (!ftrace_log)
+			panic("failed to open ftrace log file\n");
+	}
+	Log("Ftrace log is written to %s", ftrace_log_file ? ftrace_log_file : "stdout");
 }
 #endif
 

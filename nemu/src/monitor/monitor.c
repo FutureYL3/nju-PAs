@@ -47,6 +47,7 @@ static char *diff_so_file = NULL;
 static char *img_file = NULL;
 static int difftest_port = 1234;
 static char *ftrace_elf = NULL;
+static char *ftrace_log = NULL;
 
 static long load_img() {
   if (img_file == NULL) {
@@ -77,6 +78,7 @@ static int parse_args(int argc, char *argv[]) {
     {"diff"     , required_argument, NULL, 'd'},
     {"port"     , required_argument, NULL, 'p'},
 		{"ftrace"   , required_argument, NULL, 'f'},
+		{"ftracelog", required_argument, NULL, 'F'},
     {"help"     , no_argument      , NULL, 'h'},
     {0          , 0                , NULL,  0 },
   };
@@ -88,6 +90,7 @@ static int parse_args(int argc, char *argv[]) {
       case 'l': log_file = optarg; break;
       case 'd': diff_so_file = optarg; break;
 			case 'f':	ftrace_elf = optarg; break; 
+			case 'F': ftrace_log = optarg; break;
       case 1: img_file = optarg; return 0;
       default:
         printf("Usage: %s [OPTION...] IMAGE [args]\n\n", argv[0]);
@@ -96,6 +99,7 @@ static int parse_args(int argc, char *argv[]) {
         printf("\t-d,--diff=REF_SO        run DiffTest with reference REF_SO\n");
         printf("\t-p,--port=PORT          run DiffTest with port PORT\n");
 				printf("\t-f,--ftrace=ELF FILE    use ELF FILE as elf image\n");
+				printf("\t-F,--ftracelog=FILE     output ftrace log to FILE\n");
         printf("\n");
         exit(0);
     }
@@ -117,7 +121,7 @@ void init_monitor(int argc, char *argv[]) {
 
 #if CONFIG_FTRACE
 	/* Initialize symbol table and string table */
-	init_ftrace(ftrace_elf);
+	init_ftrace(ftrace_elf, ftrace_log);
 #endif
   /* Initialize memory. */
   init_mem();
