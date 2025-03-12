@@ -22,25 +22,11 @@
 #define Mr vaddr_read
 #define Mw vaddr_write
 
+#if CONFIG_FTRACE
 extern FuncSymbol *funcSymbols;
 extern FILE *ftrace_log;
 extern int indent_count;
 extern int func_entry_count;
-
-enum {
-  TYPE_I, TYPE_U, TYPE_S,
-  TYPE_N, // none
-	TYPE_J, TYPE_B, TYPE_R, TYPE_SI
-};
-
-#define src1R() do { *src1 = R(rs1); } while (0)
-#define src2R() do { *src2 = R(rs2); } while (0)
-#define immI() do { *imm = SEXT(BITS(i, 31, 20), 12); } while (0)
-#define immU() do { *imm = SEXT(BITS(i, 31, 12), 20) << 12; } while (0)
-#define immS() do { *imm = (SEXT(BITS(i, 31, 25), 7) << 5) | BITS(i, 11, 7); } while (0)
-#define immJ() do { *imm = SEXT((BITS(i, 30, 21) + (BITS(i, 20, 20) << 10) + (BITS(i, 19, 12) << 11) + (BITS(i, 31, 31) << 19)) << 1, 21); } while (0)
-#define immB() do { *imm = SEXT((BITS(i, 11, 8) + (BITS(i, 30, 25) << 4) + (BITS(i, 7, 7) << 10) + (BITS(i, 31, 31) << 11)) << 1, 13); } while (0)
-#define immSI() do { *imm = BITS(i, 24, 20); } while (0)
 
 void ftrace_call_write(word_t pc, word_t dnpc) {
   /* find function name */
@@ -81,6 +67,22 @@ void ftrace_ret_write(word_t pc) {
 
   fprintf(ftrace_log, FMT_WORD ": %s\n", pc, log_str);
 }
+#endif
+
+enum {
+  TYPE_I, TYPE_U, TYPE_S,
+  TYPE_N, // none
+	TYPE_J, TYPE_B, TYPE_R, TYPE_SI
+};
+
+#define src1R() do { *src1 = R(rs1); } while (0)
+#define src2R() do { *src2 = R(rs2); } while (0)
+#define immI() do { *imm = SEXT(BITS(i, 31, 20), 12); } while (0)
+#define immU() do { *imm = SEXT(BITS(i, 31, 12), 20) << 12; } while (0)
+#define immS() do { *imm = (SEXT(BITS(i, 31, 25), 7) << 5) | BITS(i, 11, 7); } while (0)
+#define immJ() do { *imm = SEXT((BITS(i, 30, 21) + (BITS(i, 20, 20) << 10) + (BITS(i, 19, 12) << 11) + (BITS(i, 31, 31) << 19)) << 1, 21); } while (0)
+#define immB() do { *imm = SEXT((BITS(i, 11, 8) + (BITS(i, 30, 25) << 4) + (BITS(i, 7, 7) << 10) + (BITS(i, 31, 31) << 11)) << 1, 13); } while (0)
+#define immSI() do { *imm = BITS(i, 24, 20); } while (0)
 
 static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2, word_t *imm, int type) {
   uint32_t i = s->isa.inst.val;
@@ -121,8 +123,13 @@ static int decode_exec(Decode *s) {
 	INSTPAT("??????? ????? ????? 000 ????? 0100011", sb     , S , Mw(src1 + imm, 1, BITS(src2, 7, 0)));
 	INSTPAT("??????? ????? ????? 000 ????? 0010011", addi   , I , R(rd) = src1 + imm);
   INSTPAT("??????? ????? ????? ??? ????? 0010111", auipc  , U , R(rd) = s->pc + imm);	
-	INSTPAT("??????? ????? ????? ??? ????? 1101111", jal    , J , s->dnpc = s->pc + imm; R(rd) = s->snpc; if (rd == 1 && CONFIG_FTRACE)  ftrace_call_write(s->pc, s->dnpc));
-	INSTPAT("??????? ????? ????? 000 ????? 1100111", jalr   , I , s->dnpc = (imm + src1) & ~1; R(rd) = s->snpc; if (rd == 1 && CONFIG_FTRACE)  ftrace_call_write(s->pc, s->dnpc); else if (CONFIG_FTRACE && rd == 0 && BITS(s->isa.inst.val, 19, 15) == 1 && imm == 0)  ftrace_ret_write(s->pc));
+#if CONFIG_FTRACE
+	INSTPAT("??????? ????? ????? ??? ????? 1101111", jal    , J , s->dnpc = s->pc + imm; R(rd) = s->snpc; if (rd == 1)  ftrace_call_write(s->pc, s->dnpc));
+	INSTPAT("??????? ????? ????? 000 ????? 1100111", jalr   , I , s->dnpc = (imm + src1) & ~1; R(rd) = s->snpc; if (rd == 1)  ftrace_call_write(s->pc, s->dnpc); else if (rd == 0 && BITS(s->isa.inst.val, 19, 15) == 1 && imm == 0)  ftrace_ret_write(s->pc));
+#else
+	INSTPAT("??????? ????? ????? ??? ????? 1101111", jal    , J , s->dnpc = s->pc + imm; R(rd) = s->snpc);
+	INSTPAT("??????? ????? ????? 000 ????? 1100111", jalr   , I , s->dnpc = (imm + src1) & ~1; R(rd) = s->snpc);
+#endif
 	INSTPAT("??????? ????? ????? 000 ????? 1100011", beq    , B , if (src1 == src2)  s->dnpc = imm + s->pc);
 	INSTPAT("??????? ????? ????? 001 ????? 1100011", bne    , B , if (src1 != src2)  s->dnpc = imm + s->pc);
 	INSTPAT("??????? ????? ????? 100 ????? 1100011", blt    , B , if ((int32_t) src1 < (int32_t) src2)  s->dnpc = imm + s->pc);
