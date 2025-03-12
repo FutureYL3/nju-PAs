@@ -26,10 +26,10 @@ $(BINARY): compile_git
 
 override ARGS ?= --log=$(BUILD_DIR)/nemu-log.txt
 override ARGS += $(ARGS_DIFF)
-override ARGS += --ftrace=$(ELF_IMAGE)
+override ARGS += --ftrace=$(ELF_IMG).elf
 
 # Command to execute NEMU
-IMG ?=
+IMG ?= $(ELF_IMG).bin
 NEMU_EXEC := $(BINARY) $(ARGS) $(IMG)
 
 run-env: $(BINARY) $(DIFF_REF_SO)
