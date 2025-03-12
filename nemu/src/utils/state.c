@@ -14,13 +14,16 @@
 ***************************************************************************************/
 
 #include <utils.h>
+#ifdef CONFIG_IRINGBUF
 #define MAX_IRINGBUF_SIZE 20
 extern char iringbuf[MAX_IRINGBUF_SIZE][200];
 extern int iringbuf_cur_next;
+#endif
 
 NEMUState nemu_state = { .state = NEMU_STOP };
 
 int is_exit_status_bad() {
+#ifdef CONFIG_IRINGBUF
 	/* Print iringbuf content if program ends because of  exception */
 	if (nemu_state.halt_ret != 0) { 
 		int cur = iringbuf_cur_next == 0 ? MAX_IRINGBUF_SIZE - 1 : iringbuf_cur_next - 1;
@@ -35,6 +38,7 @@ int is_exit_status_bad() {
 			else  printf("    %s", iringbuf[i]);
 		}
 	}
+#endif
 
   int good = (nemu_state.state == NEMU_END && nemu_state.halt_ret == 0) ||
     (nemu_state.state == NEMU_QUIT);

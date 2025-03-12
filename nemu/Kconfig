@@ -153,6 +153,11 @@ config ITRACE_COND
   string "Only trace instructions when the condition is true"
   default "true"
 
+config IRINGBUF
+	depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPRETER
+	bool "Enable iringbuf tracer"
+	default y
+
 config MTRACE
 	depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPRETER
 	bool "Enable memory tracer"
@@ -161,7 +166,7 @@ config MTRACE
 config FTRACE
 	depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPRETER
 	int "Enable function call tracer"
-	default 0
+	default 1
 
 config DIFFTEST
   depends on TARGET_NATIVE_ELF

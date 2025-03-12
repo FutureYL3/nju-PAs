@@ -32,14 +32,17 @@ uint64_t g_nr_guest_inst = 0;
 static uint64_t g_timer = 0; // unit: us
 static bool g_print_step = false;
 
+#ifdef CONFIG_IRINGBUF
 /* for iringbuf */
 #define MAX_IRINGBUF_SIZE 20
 char iringbuf[MAX_IRINGBUF_SIZE][200];
 int iringbuf_cur_next = 0;
+#endif
 
 void device_update();
 void check_for_wp_change();
 
+#if CONFIG_FTRACE
 #define FTRACE_LOG_FILE "/home/yl/ftrace-nemu-log.txt"
 FuncSymbol *funcSymbols = NULL;
 FILE *ftrace_log = NULL;
@@ -145,6 +148,7 @@ void init_ftrace(const char *ftrace_elf) {
 	if (!ftrace_log)
 		panic("failed to open ftrace log file\n");
 }
+#endif
 
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
@@ -153,9 +157,11 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
 
+#ifdef CONFIG_IRINGBUF
 	/* for iringbuf */
 	snprintf(iringbuf[iringbuf_cur_next], sizeof(iringbuf[0]), "%s\n", _this->logbuf);
 	iringbuf_cur_next = (iringbuf_cur_next + 1) % MAX_IRINGBUF_SIZE;
+#endif
 
 #ifdef CONFIG_WATCHPOINT
 	/* scan all the watchpoints */
