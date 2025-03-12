@@ -50,7 +50,7 @@ char *strcat(char *dst, const char *src) {
 
 int strcmp(const char *s1, const char *s2) {
 	while (*s1 != '\0' && *s2 != '\0') {
-		int diff = *s1 - *s2;
+		int diff = (unsigned char) *s1 - (unsigned char) *s2;
 		if (diff != 0)  return diff;
 		++s1; ++s2;
 	}
@@ -63,7 +63,7 @@ int strcmp(const char *s1, const char *s2) {
 int strncmp(const char *s1, const char *s2, size_t n) {
 	size_t i;
 	for (i = 0; i < n && s1[i] != '\0' && s2[i] != '\0'; ++ i) {
-		int diff = s1[i] - s2[i];
+		int diff = (unsigned char) s1[i] - (unsigned char) s2[i];
 		if (diff != 0)  return diff;
 	}
 	if (i == n)  return 0;
@@ -87,19 +87,45 @@ void *memset(void *s, int c, size_t n) {
 	return s;
 }
 
-/* if n == 0, the function will do nothing */
+// /* if n == 0, the function will do nothing */
+// void *memmove(void *dst, const void *src, size_t n) {
+// 	unsigned char temp[n];
+// 	memcpy((void*) temp, src, n);
+
+// 	size_t i;
+// 	unsigned char *p = (unsigned char*) dst;
+// 	for (i = 0; i < n; ++ i) {
+// 		*p = temp[i];
+// 		++p;
+// 	}
+
+// 	return dst;
+// }
+
 void *memmove(void *dst, const void *src, size_t n) {
-	unsigned char temp[n];
-	memcpy((void*) temp, src, n);
+  if (dst == src || n == 0) {
+    return dst;
+  }
 
-	size_t i;
-	unsigned char *p = (unsigned char*) dst;
-	for (i = 0; i < n; ++ i) {
-		*p = temp[i];
-		++p;
-	}
+  unsigned char *d = (unsigned char *)dst;
+  const unsigned char *s = (const unsigned char *)src;
 
-	return dst;
+  if (d < s) {
+    // 如果目标区域在源区域之前（不存在往后覆盖的风险），
+    // 就从前往后拷贝
+    for (size_t i = 0; i < n; i++) {
+      d[i] = s[i];
+    }
+  } else {
+    // 如果目标区域在源区域之后（可能存在覆盖风险），
+    // 就从后往前拷贝
+    // 注意要先让 i = n，而后自减
+    for (size_t i = n; i > 0; i--) {
+      d[i - 1] = s[i - 1];
+    }
+  }
+
+  return dst;
 }
 
 /* if n == 0, the function will do nothing */

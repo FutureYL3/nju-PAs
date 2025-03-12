@@ -2,6 +2,7 @@
 #include <klib.h>
 #include <klib-macros.h>
 #include <stdarg.h>
+#include <limits.h>
 
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 
@@ -20,6 +21,9 @@ int sprintf(char *out, const char *fmt, ...) {
 	while (*fmt) {
 		if (*fmt == '%') {
 			++fmt;
+      if (!*fmt) {
+        panic("%% at the end of the format string\n");
+      }
 			switch (*fmt) {
 				case 's':
 					char *str = va_arg(ap, char *);
@@ -29,7 +33,7 @@ int sprintf(char *out, const char *fmt, ...) {
 					}
 					break;
 				case 'd':
-					int num = va_arg(ap, int), i = 0, is_neg = 0;
+					int num = va_arg(ap, int), i = 0, is_neg = 0, is_min = 0;
 
 					if (num == 0) {
 						out[len++] = '0';
@@ -38,7 +42,11 @@ int sprintf(char *out, const char *fmt, ...) {
 
 					if (num < 0) {
 						is_neg = 1;
-						num = -num;
+            if (num == INT_MIN) {
+              is_min = 1;
+              num = INT_MAX;
+            }
+            else  num = -num;
 					}
 
 					while (num) {
@@ -55,6 +63,7 @@ int sprintf(char *out, const char *fmt, ...) {
 						out[len + end] = temp;
 						++start; --end;
 					}
+          if (is_min)  out[len + i - 1] += 1; // fix for INT_MIN
 					len += i;
 					break;
 				default:
