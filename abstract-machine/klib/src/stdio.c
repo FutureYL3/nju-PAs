@@ -7,7 +7,76 @@
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 
 int printf(const char *fmt, ...) {
-  panic("Not implemented");
+	va_list ap;
+	va_start(ap, fmt);
+	int len = 0;
+	while (*fmt) {
+		if (*fmt == '%') {
+			++fmt;
+      if (!*fmt) {
+        panic("%% at the end of the format string\n");
+      }
+			switch (*fmt) {
+				case 's':
+					char *str = va_arg(ap, char *);
+					while (str != NULL && *str) {
+						putch(*str);
+						++len;
+            ++str;
+					}
+					break;
+				case 'd':
+					char buffer[20] = {0};
+					int num = va_arg(ap, int), i = 0, is_neg = 0, is_min = 0;
+
+					if (num == 0) {
+						putch('0');
+            ++len;
+						break;
+					}
+
+					if (num < 0) {
+						is_neg = 1;
+            if (num == INT_MIN) {
+              is_min = 1;
+              num = INT_MAX;
+            }
+            else  num = -num;
+					}
+
+					while (num) {
+						buffer[i++] = num % 10 + '0';
+						num /= 10;
+					}
+					if (is_neg) {
+						buffer[i++] = '-';
+					}
+					int start = 0, end = i - 1;
+					while (start < end) {
+						char temp = buffer[start];
+					 	buffer[start] = buffer[end];
+						buffer[end] = temp;
+						++start; --end;
+					}
+          if (is_min)  buffer[i - 1] += 1; // fix for INT_MIN
+					len += i;
+          for (int j = 0; j < i; j++) {
+            putch(buffer[j]);
+          }
+					break;
+				default:
+					halt(1);
+			}
+		}
+		else {
+			putch(*fmt);
+			++len;
+		}
+		++fmt;
+	}
+	va_end(ap);
+	return len;
+
 }
 
 int vsprintf(char *out, const char *fmt, va_list ap) {
