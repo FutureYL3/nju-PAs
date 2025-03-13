@@ -1,6 +1,8 @@
 #include <am.h>
 #include <nemu.h>
 
+word_t vaddr_read(vaddr_t addr, int len);
+
 void __am_timer_init() {
 }
 
