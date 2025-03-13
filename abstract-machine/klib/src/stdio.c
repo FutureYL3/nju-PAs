@@ -16,6 +16,27 @@ int printf(const char *fmt, ...) {
       if (!*fmt) {
         panic("%% at the end of the format string\n");
       }
+      char pad = ' ';
+      int align = 1; // 0 for left and 1 for right
+      int width = 0;
+      switch (*fmt) {
+        case '0':
+          pad = '0'; ++fmt;
+          break;
+        case '-':
+          align = 0;
+          ++fmt;
+          switch (*fmt) {
+            case '0':
+              pad = '0'; ++fmt;
+              break;
+          }
+          break;
+      }
+      while (*fmt >= '0' && *fmt <= '9') {
+        width = width * 10 + (*fmt - '0');
+        fmt++;
+      }
 			switch (*fmt) {
 				case 's':
 					char *str = va_arg(ap, char *);
@@ -30,8 +51,23 @@ int printf(const char *fmt, ...) {
 					int num = va_arg(ap, int), i = 0, is_neg = 0, is_min = 0;
 
 					if (num == 0) {
-						putch('0');
+            int pad_num = 0;
+            if (width > 1)  pad_num = width - 1;
+
+            if (align == 1) {
+              for (int p = 0; p < pad_num; ++ p) {
+                putch(pad);
+                ++len;
+              }
+            }
+            putch('0');
             ++len;
+            if (align == 0) {
+              for (int p = 0; p < pad_num; ++ p) {
+                putch(pad);
+                ++len;
+              }
+            }
 						break;
 					}
 
@@ -60,8 +96,24 @@ int printf(const char *fmt, ...) {
 					}
           if (is_min)  buffer[i - 1] += 1; // fix for INT_MIN
 					len += i;
-          for (int j = 0; j < i; j++) {
-            putch(buffer[j]);
+
+          int pad_num = 0;
+          if (width > i)  pad_num = width - i; 
+          
+          if (align == 1) {
+            for (int p = 0; p < pad_num; p++) {
+              putch(pad);
+              len++;
+            }
+          }
+
+          for (int j = 0; j < i; j++)  putch(buffer[j]);
+
+          if (align == 0) {
+            for (int p = 0; p < pad_num; p++) {
+              putch(pad);
+              len++;
+            }
           }
 					break;
 				default:
