@@ -35,8 +35,6 @@ void *malloc(size_t size) {
   // Therefore do not call panic() here, else it will yield a dead recursion:
   //   panic() -> putchar() -> (glibc) -> malloc() -> panic()
 #if !(defined(__ISA_NATIVE__) && defined(__NATIVE_USE_KLIB__))
-  panic("Not implemented");
-#endif
 	if (size == 0)  return NULL;
 	static char *addr = NULL;
 
@@ -51,6 +49,8 @@ void *malloc(size_t size) {
 	void *ret = next_addr;
 	addr = (char *) next_addr + size;
 	return ret;
+#endif
+	panic("Not implemented");	
 }
 
 void free(void *ptr) {
