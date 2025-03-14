@@ -10,7 +10,7 @@ void __am_gpu_init() {
 	int w = vga_size >> 16;
 	int h = vga_size & 0xffff;
 	uint32_t *fb = (uint32_t *)(uintptr_t) FB_ADDR;
-	for (int i = 0; i < w * h; ++ i)  fb[i] = i;
+	for (i = 0; i < w * h; ++ i)  fb[i] = i;
 	outl(SYNC_ADDR, 1);
 }
 
