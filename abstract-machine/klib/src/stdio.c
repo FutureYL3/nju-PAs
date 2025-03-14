@@ -38,7 +38,7 @@ int printf(const char *fmt, ...) {
         fmt++;
       }
 			switch (*fmt) {
-				case 's':
+				case 's': {
 					char *str = va_arg(ap, char *);
 					while (str != NULL && *str) {
 						putch(*str);
@@ -46,7 +46,8 @@ int printf(const char *fmt, ...) {
             ++str;
 					}
 					break;
-				case 'd':
+        }
+				case 'd': {
 					char buffer[20] = {0};
 					int num = va_arg(ap, int), i = 0, is_neg = 0, is_min = 0;
 
@@ -116,8 +117,129 @@ int printf(const char *fmt, ...) {
             }
           }
 					break;
+        }
+				case 'u': {
+					char buffer[20] = {0};
+					unsigned int num = va_arg(ap, unsigned int), i = 0;
+
+					if (num == 0) {
+            int pad_num = 0;
+            if (width > 1)  pad_num = width - 1;
+
+            if (align == 1) {
+              for (int p = 0; p < pad_num; ++ p) {
+                putch(pad);
+                ++len;
+              }
+            }
+            putch('0');
+            ++len;
+            if (align == 0) {
+              for (int p = 0; p < pad_num; ++ p) {
+                putch(pad);
+                ++len;
+              }
+            }
+						break;
+					}	
+
+					while (num) {
+						buffer[i++] = num % 10 + '0';
+						num /= 10;
+					}
+					
+					int start = 0, end = i - 1;
+					while (start < end) {
+						char temp = buffer[start];
+					 	buffer[start] = buffer[end];
+						buffer[end] = temp;
+						++start; --end;
+					} 
+					len += i;
+
+          int pad_num = 0;
+          if (width > i)  pad_num = width - i; 
+          
+          if (align == 1) {
+            for (int p = 0; p < pad_num; p++) {
+              putch(pad);
+              len++;
+            }
+          }
+
+          for (int j = 0; j < i; j++)  putch(buffer[j]);
+
+          if (align == 0) {
+            for (int p = 0; p < pad_num; p++) {
+              putch(pad);
+              len++;
+            }
+          }
+					break;
+        }
+				case 'x': {
+					char buffer[20] = {0};
+					unsigned int num = va_arg(ap, unsigned int), i = 0;
+
+					if (num == 0) {
+            int pad_num = 0;
+            if (width > 1)  pad_num = width - 1;
+
+            if (align == 1) {
+              for (int p = 0; p < pad_num; ++ p) {
+                putch(pad);
+                ++len;
+              }
+            }
+            putch('0');
+            ++len;
+            if (align == 0) {
+              for (int p = 0; p < pad_num; ++ p) {
+                putch(pad);
+                ++len;
+              }
+            }
+						break;
+					}	
+
+					while (num) {
+						int remainder = num % 16;
+						if (remainder < 10)  buffer[i++] = remainder + '0';
+						else  buffer[i++] = remainder - 10 + 'a';
+						num /= 16;
+					}
+					
+					int start = 0, end = i - 1;
+					while (start < end) {
+						char temp = buffer[start];
+					 	buffer[start] = buffer[end];
+						buffer[end] = temp;
+						++start; --end;
+					} 
+					len += i;
+
+          int pad_num = 0;
+          if (width > i)  pad_num = width - i; 
+          
+          if (align == 1) {
+            for (int p = 0; p < pad_num; p++) {
+              putch(pad);
+              len++;
+            }
+          }
+
+          for (int j = 0; j < i; j++)  putch(buffer[j]);
+
+          if (align == 0) {
+            for (int p = 0; p < pad_num; p++) {
+              putch(pad);
+              len++;
+            }
+          }
+					break;
+        }
 				default:
-					halt(1);
+					panic("Not implemented printf symbol");
 			}
 		}
 		else {
