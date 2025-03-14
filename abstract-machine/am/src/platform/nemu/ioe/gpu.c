@@ -24,7 +24,7 @@ void __am_gpu_fbdraw(AM_GPU_FBDRAW_T *ctl) {
 	uint32_t *pixels_ptr = (uint32_t *) ctl->pixels;
 	uint32_t offset = (w * ctl->y + ctl->x) * 4;
 	for (int i = 0; i < ctl->h; ++ i) {
-		for (int j = 1; j <= ctl->w; ++ j) {
+		for (int j = 0; j < ctl->w; ++ j) {
 			uint32_t pos = FB_ADDR + offset + 4 * j;
 			outl(pos, *pixels_ptr);
 			++pixels_ptr;
