@@ -14,10 +14,6 @@ INC_PATH := $(WORK_DIR)/include $(INC_PATH)
 OBJ_DIR  = $(BUILD_DIR)/obj-$(NAME)$(SO)
 BINARY   = $(BUILD_DIR)/$(NAME)$(SO)
 
-# Compilation flags
-# ifeq ($(BATCH_MODE), y)
-# 	CFLAGS += -DBATCH_MODE
-# endif
 ifeq ($(CC),clang)
 CXX := clang++
 else

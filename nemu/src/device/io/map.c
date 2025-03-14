@@ -58,6 +58,14 @@ word_t map_read(paddr_t addr, int len, IOMap *map) {
   paddr_t offset = addr - map->low;
   invoke_callback(map->callback, offset, len, false); // prepare data to read
   word_t ret = host_read(map->space + offset, len);
+#ifdef CONFIG_DTRACE
+#ifdef CONFIG_DTRACE_COND
+	if (DTRACE_COND)
+		log_write("[Device Read] Device: %s. Read " FMT_WORD "(%d Bytes) From " FMT_WORD "\n", map->name, ret, len, addr);
+#else
+	log_write("[Device Read] Device: %s. Read " FMT_WORD "(%d Bytes) From " FMT_WORD "\n", map->name, ret, len, addr);
+#endif
+#endif
   return ret;
 }
 
@@ -67,4 +75,12 @@ void map_write(paddr_t addr, int len, word_t data, IOMap *map) {
   paddr_t offset = addr - map->low;
   host_write(map->space + offset, len, data);
   invoke_callback(map->callback, offset, len, true);
+#ifdef CONFIG_DTRACE
+#ifdef CONFIG_DTRACE_COND
+	if (DTRACE_COND)
+		log_write("[Device Written] Device: %s. Write " FMT_WORD "(%d Bytes) To " FMT_WORD "\n", map->name, data, len, addr);
+#else
+	log_write("[Device Written] Device: %s. Write " FMT_WORD "(%d Bytes) To " FMT_WORD "\n", map->name, data, len, addr);
+#endif
+#endif
 }
