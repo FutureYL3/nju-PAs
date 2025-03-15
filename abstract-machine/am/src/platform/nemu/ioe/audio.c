@@ -35,7 +35,7 @@ void __am_audio_play(AM_AUDIO_PLAY_T *ctl) {
 	while (sbuf_size - count < data_size) { 
     /* wait for enough space */ 
     yield();
-    printf("yield\n");
+    // printf("yield\n");
     count = inl(AUDIO_COUNT_ADDR);
   }
 
