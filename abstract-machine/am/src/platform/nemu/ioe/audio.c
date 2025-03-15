@@ -28,10 +28,10 @@ void __am_audio_status(AM_AUDIO_STATUS_T *stat) {
 }
 
 void __am_audio_play(AM_AUDIO_PLAY_T *ctl) {
-	uint32_t sbuf_size = inl(AUDIO_SBUF_SIZE_ADDR);
+	// uint32_t sbuf_size = inl(AUDIO_SBUF_SIZE_ADDR);
 	volatile uint32_t count = inl(AUDIO_COUNT_ADDR);
 	uint32_t data_size = ctl->buf.end - ctl->buf.start;
-	while (sbuf_size - count < data_size) { /* wait for enough space */ }
+	// while (sbuf_size - count < data_size) { /* wait for enough space */ }
 
 	uint32_t base = AUDIO_SBUF_ADDR + count;
 	uint8_t *dest = (uint8_t *) base;
