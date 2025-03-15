@@ -1,5 +1,6 @@
 #include <am.h>
 #include <nemu.h>
+#include <klib.h>
 
 #define AUDIO_FREQ_ADDR      (AUDIO_ADDR + 0x00)
 #define AUDIO_CHANNELS_ADDR  (AUDIO_ADDR + 0x04)
@@ -34,6 +35,7 @@ void __am_audio_play(AM_AUDIO_PLAY_T *ctl) {
 	while (sbuf_size - count < data_size) { 
     /* wait for enough space */ 
     yield();
+    printf("yield\n");
     count = inl(AUDIO_COUNT_ADDR);
   }
 
