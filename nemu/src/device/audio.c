@@ -35,7 +35,7 @@ static void audio_callback(void *userdata, Uint8 *stream, int len) {
 	if (count < len) {
 		int i;
 		for (i = 0; i < count; ++ i) 	stream[i] = sbuf[i]; 
-		// for ( ; i < len; ++ i)  stream[i] = 0;
+		for ( ; i < len; ++ i)  stream[i] = 0;
 		audio_base[5] = 0;
 	}
 	else {
