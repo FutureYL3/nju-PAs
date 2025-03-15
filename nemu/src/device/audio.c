@@ -30,7 +30,40 @@ enum {
 static uint8_t *sbuf = NULL;
 static uint32_t *audio_base = NULL;
 
+static void audio_callback(void *userdata, Uint8 *stream, int len) {
+ 	uint32_t count = audio_base[5];
+	if (count < len) {
+		int i;
+		for (i = 0; i < count; ++ i) 	stream[i] = sbuf[i]; 
+		for ( ; i < len; ++ i)  stream[i] = 0;
+		audio_base[5] = 0;
+	}
+	else {
+		for (int i = 0; i < len; ++ i)  stream[i] = sbuf[i];
+    memmove(sbuf, sbuf + len, count - len);
+		audio_base[5] = count - len;
+	}
+}
+
 static void audio_io_handler(uint32_t offset, int len, bool is_write) {
+	if (offset == 16 && is_write) {
+		// init SDL audio card
+		Assert(audio_base[0] != 0 && audio_base[1] != 0 && audio_base[2] != 0, "freq channles or samples register uninitialized\n");
+		SDL_AudioSpec s = {};
+		s.format = AUDIO_S16SYS;
+		s.userdata = NULL;
+		s.freq = audio_base[0];
+		s.channels = audio_base[1];
+		s.samples = audio_base[2];
+		s.callback = audio_callback;
+		Assert(SDL_InitSubSystem(SDL_INIT_AUDIO) == 0, "failed to init sdl audio subsystem\n");
+		Assert(SDL_OpenAudio(&s, NULL) == 0, "failed to open audio spec\n");
+		SDL_PauseAudio(0); // start play
+		
+	}
+
+	if (offset == 0 || offset == 4 || offset == 8)  Assert(is_write, "freq, channels or samples register can not be read\n");
+	if (offset == 12)  Assert(!is_write, "bufsize register can not be written\n");
 }
 
 void init_audio() {
@@ -43,5 +76,7 @@ void init_audio() {
 #endif
 
   sbuf = (uint8_t *)new_space(CONFIG_SB_SIZE);
+	audio_base[3] = CONFIG_SB_SIZE;
+	audio_base[4] = 0; // init reg is 0 for currently uninitialized
   add_mmio_map("audio-sbuf", CONFIG_SB_ADDR, sbuf, CONFIG_SB_SIZE, NULL);
 }
