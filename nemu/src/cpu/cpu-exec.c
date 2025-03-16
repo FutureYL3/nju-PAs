@@ -40,7 +40,9 @@ int iringbuf_cur_next = 0;
 #endif
 
 void device_update();
+#ifdef CONFIG_WATCHPOINT
 void check_for_wp_change();
+#endif
 
 #if CONFIG_FTRACE
 FuncSymbol *funcSymbols = NULL;
