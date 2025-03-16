@@ -27,9 +27,8 @@ $(BINARY): compile_git
 override ARGS ?= --log=$(BUILD_DIR)/nemu-log.txt
 override ARGS += $(ARGS_DIFF)
 
-ifdef ELF_IMG
-override ARGS += --ftrace=$(ELF_IMG).elf
-IMG = $(ELF_IMG).bin
+ifdef CONFIG_FTRACE
+override ARGS += --ftrace="$(basename $(IMG))".elf
 override ARGS += --ftracelog=$(BUILD_DIR)/ftrace-log.txt
 endif
 
