@@ -37,10 +37,12 @@ static int is_batch_mode = false;
 static int is_batch_mode = false;
 
 void init_regex();
+#ifdef CONFIG_WATCHPOINT
 void init_wp_pool();
 int new_wp(char *EXPR);
 bool free_wp(int NO);
 void wp_display();
+#endif
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 static char* rl_gets() {
@@ -76,8 +78,10 @@ static int cmd_si(char *args);
 static int cmd_info(char *args);
 static int cmd_x(char *args);
 static int cmd_p(char *args);
+#ifdef CONFIG_WATCHPOINT
 static int cmd_w(char *args);
 static int cmd_d(char *args);
+#endif
 
 static struct {
   const char *name;
@@ -93,8 +97,10 @@ static struct {
 	{ "info", "usage: info (r,w). Print register or watchpoint status", cmd_info },
   { "x", "usage: x N EXPR. Evaluate the expression EXPR, use the result as the starting memory address, and output N sequential 4 bytes in hexadecimal", cmd_x },
   { "p", "usage: p EXPR. Evaluate the expression EXPR and print out its value", cmd_p },
+#ifdef CONFIG_WATCHPOINT
 	{ "w", "usage: w EXPR. Watch the value of EXPR and pause the program when its value has changed", cmd_w },
 	{ "d", "usage: d N. Delete the watchpoint that is NO.N", cmd_d }
+#endif
 };
 
 #define NR_CMD ARRLEN(cmd_table)
@@ -176,7 +182,11 @@ static int cmd_info(char *args) {
 	}
 	else if (strcmp(arg, "w") == 0) {
 		/* TODO: print watchpoint status */
+#ifdef CONFIG_WATCHPOINT
 		wp_display();	
+#else
+		fprintf(stderr, "Warning: Watchpoint function not enabled, please enable it in menuconfig\n");
+#endif
 		return 0;
 	}
 
@@ -258,6 +268,7 @@ static int cmd_p(char *args) {
 	return 0;
 }
 
+#ifdef CONFIG_WATCHPOINT
 static int cmd_w(char *args) {
 	if (args == NULL) {
 		fprintf(stderr, "Warning: Missing argument EXPR\n");
@@ -304,6 +315,7 @@ static int cmd_d(char *args) {
 
 	return 0;
 }	
+#endif
 	
 
 void sdb_set_batch_mode() {
@@ -352,6 +364,8 @@ void init_sdb() {
   /* Compile the regular expressions. */
   init_regex();
 
+#ifdef CONFIG_WATCHPOINT
   /* Initialize the watchpoint pool. */
   init_wp_pool();
+#endif
 }
