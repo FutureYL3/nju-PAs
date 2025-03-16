@@ -27,11 +27,14 @@
 /* for cmd_x to use vaddr_read */
 #include <memory/vaddr.h>
 
-#ifdef CONFIG_BATCH_MODE
+/* #ifdef CONFIG_BATCH_MODE
 static int is_batch_mode = true;
 #else
 static int is_batch_mode = false;
 #endif
+*/
+
+static int is_batch_mode = false;
 
 void init_regex();
 void init_wp_pool();
