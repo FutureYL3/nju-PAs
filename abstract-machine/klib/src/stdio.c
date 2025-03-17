@@ -238,6 +238,56 @@ int printf(const char *fmt, ...) {
           }
 					break;
         }
+        case 'p': {
+          void *ptr = va_arg(ap, void*);
+          uintptr_t addr = (uintptr_t)ptr;
+          char hexbuffer[20] = {0};
+          int i = 0;
+          
+          if (addr == 0)  hexbuffer[i++] = '0';
+          else {
+            while (addr) {
+              int remainder = addr % 16;
+              if (remainder < 10)  hexbuffer[i++] = remainder + '0';
+              else  hexbuffer[i++] = remainder - 10 + 'a';
+              addr /= 16;
+            }
+          }
+
+          int start = 0, end = i - 1;
+          while (start < end) {
+            char tmp = hexbuffer[start];
+            hexbuffer[start] = hexbuffer[end];
+            hexbuffer[end] = tmp;
+            ++start; --end;
+          }
+
+          int str_len = i + 2;
+          int pad_num = 0;
+          if (width > str_len)  pad_num = width - str_len;
+          
+          if (align == 1) {
+            for (int p = 0; p < pad_num; ++p) {
+              putch(pad);
+              ++len;
+            }
+          }
+
+          putch('0'); putch('x');
+          len += 2;
+
+          for (int j = 0; j < i; j++) {
+            putch(hexbuffer[j]);
+            ++len;
+          }
+          if (align == 0) {
+            for (int p = 0; p < pad_num; ++p) {
+              putch(pad);
+              ++len;
+            }
+          }
+          break;
+        }
 				default:
 					panic("Not implemented printf symbol");
 			}
