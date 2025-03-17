@@ -18,10 +18,17 @@
 word_t isa_raise_intr(word_t NO, vaddr_t epc) {
   /* TODO: Trigger an interrupt/exception with ``NO''.
    * Then return the address of the interrupt/exception vector.
-   
+   */ 
 	switch (NO) {
+		// yield intr
 		case -1: {
-	*/
+			cpu.mepc = epc;
+			cpu.mcause = 1;
+			return cpu.mtvec;
+		}
+		default:
+			panic("unknown number: NO.%d\n at pc = " FMT_WORD "\n", NO, epc);
+	}			 
 
   return 0;
 }
