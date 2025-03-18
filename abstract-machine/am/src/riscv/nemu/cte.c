@@ -28,6 +28,7 @@ Context* __am_irq_handle(Context *c) {
     assert(c != NULL);
   }
 
+  c->mepc += 4; // add 4 to mepc to avoid infinite ecall
   return c;
 }
 

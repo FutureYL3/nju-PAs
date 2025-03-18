@@ -23,7 +23,7 @@ word_t isa_raise_intr(word_t NO, vaddr_t epc) {
 		// yield intr
 		case -1: {
 			cpu.mepc = epc;
-			cpu.mcause = 1;
+			cpu.mcause = 1; // for yield
 			return cpu.mtvec;
 		}
 		default:
