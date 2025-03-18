@@ -19,7 +19,11 @@ word_t isa_raise_intr(word_t NO, vaddr_t epc) {
   /* TODO: Trigger an interrupt/exception with ``NO''.
    * Then return the address of the interrupt/exception vector.
    */ 
-	switch (NO) {
+#ifdef CONFIG_ETRACE
+  Log("Raised exception/interruption: The number is %d(" FMT_WORD "), at pc = " FMT_WORD "\n", NO, NO, epc);
+#endif
+
+  switch (NO) {
 		// yield intr
 		case -1: {
 			cpu.mepc = epc;
