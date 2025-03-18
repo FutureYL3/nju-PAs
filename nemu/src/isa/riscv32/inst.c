@@ -168,7 +168,7 @@ static int decode_exec(Decode *s) {
 	INSTPAT("??????? ????? ????? 010 ????? 11100 11", csrrs  , I, do { if (imm == 0x305) {if (src1 != 0) cpu.mtvec |= src1; R(rd) = cpu.mtvec;} else if (imm == 0x300) {if (src1 != 0) cpu.mstatus |= src1; R(rd) = cpu.mstatus;} else if (imm == 0x341) {if (src1 != 0) cpu.mepc |= src1; R(rd) = cpu.mepc;} else if (imm == 0x342) {if (src1 != 0) cpu.mcause |= src1; R(rd) = cpu.mcause;} else panic("unknown command at pc = " FMT_WORD "\n", s->pc); } while (0));
   INSTPAT("0000000 00001 00000 000 00000 11100 11", ebreak , N, NEMUTRAP(s->pc, R(10))); // R(10) is $a0
  	INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall  , N, s->dnpc = isa_raise_intr(R(17), s->pc)); // R(17) is $a7
-	INSTPAT("0011000 00010 00000 000 00000 11100 11", mret   , N, s->dnpc = cpu.mepc + 4);
+	INSTPAT("0011000 00010 00000 000 00000 11100 11", mret   , N, s->dnpc = cpu.mepc);
   INSTPAT("??????? ????? ????? ??? ????? ????? ??", inv    , N, INV(s->pc));
   INSTPAT_END();
 
