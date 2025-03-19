@@ -178,7 +178,7 @@ config FTRACE
 	default 0
 
 config DTRACE
-	depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPERTER
+	depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPRETER
 	bool "Enable device tracer"
 	default n
 
@@ -188,7 +188,7 @@ config DTRACE_COND
 	default "true"
 
 config ETRACE
-  depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPERTER
+  depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPRETER
   bool "Enable exception/interruption tracer"
   default n
 
