@@ -38,7 +38,7 @@ void ftrace_call_write(word_t pc, word_t dnpc) {
       break;
     }
   }
-  if (i == func_entry_count)  Log("can not find function call at pc = " FMT_WORD "\n", pc); 
+  if (i == func_entry_count) { Log("can not find function call at pc = " FMT_WORD "\n", pc); return; }
   char log_str[200];
   char *p = log_str;
   for (int j = 0; j < indent_count; ++ j)  p += sprintf(p, "  ");
@@ -59,7 +59,7 @@ void ftrace_ret_write(word_t pc) {
       break;
     }
   }
-  if (i == func_entry_count)  Log("can not find function call at pc = " FMT_WORD "\n", pc); 
+  if (i == func_entry_count) { Log("can not find function call at pc = " FMT_WORD "\n", pc); return; }
   char log_str[200];
   char *p = log_str;
   for (int j = 0; j < indent_count; ++ j)  p += sprintf(p, "  ");
