@@ -27,7 +27,7 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
 	/* Only for single program in ramdisk */
 	Elf_Ehdr *ehdr = (Elf_Ehdr *) &ramdisk_start;
 	// check for magic number
-	assert(*((uint32_t *)ehdr->e_ident) == 0x7f454c46);
+	assert(*(uint32_t *)ehdr->e_ident == 0x7f454c46);
 	// check for ISA type
 	assert(ehdr->e_machine == EXPECT_TYPE);
 	// load to memory
