@@ -12,8 +12,6 @@
 *
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
-#ifdef CONFIG_WATCHPOINT
-
 #include "sdb.h"
 /* for strdup */
 #include <string.h>
@@ -157,4 +155,3 @@ void wp_display() {
 	}
 }
 
-#endif
