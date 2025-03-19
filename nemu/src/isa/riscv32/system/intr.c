@@ -23,18 +23,9 @@ word_t isa_raise_intr(word_t NO, vaddr_t epc) {
   Log("Raised exception/interruption: The number is %d(" FMT_WORD "), at pc = " FMT_WORD "\n", NO, NO, epc);
 #endif
 
-  switch (NO) {
-		// yield intr
-		case -1: {
-			cpu.mepc = epc;
-			cpu.mcause = 1; // for yield
-			return cpu.mtvec;
-		}
-		default:
-			panic("unknown number: NO.%d\n at pc = " FMT_WORD "\n", NO, epc);
-	}			 
-
-  return 0;
+  cpu.mepc = epc;
+  cpu.mcause = NO; // for yield
+  return cpu.mtvec;
 }
 
 word_t isa_query_intr() {
