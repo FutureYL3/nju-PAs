@@ -25,7 +25,7 @@ extern char ramdisk_end[];
 
 static uintptr_t loader(PCB *pcb, const char *filename) {
 	/* Only for single program in ramdisk */
-	Elf32_Ehdr *ehdr = (Elf32_Ehdr *) &ramdisk_start;
+	Elf_Ehdr *ehdr = (Elf_Ehdr *) &ramdisk_start;
 	// check for magic number
 	assert(*(uint32_t *)ehdr->e_ident == 0x464c457f); // for little endian check
 	// check for ISA type
