@@ -50,7 +50,7 @@ ssize_t write(int fd, const void *buf, size_t count) {
     }
   
     default: {
-      Log("error occur in syscall write for unknown fd: %d", fd);
+      // Log("error occur in syscall write for unknown fd: %d", fd);
       return -1;
     }
   }
