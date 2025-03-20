@@ -10,7 +10,7 @@ void do_syscall(Context *c) {
   a[3] = c->GPR4;
 
   char *name = NULL;
-  Log("syscall with params a0=%d, a1=%d, a2=%d\n", a[1], a[2], a[3]);
+
   switch (a[0]) {
     case SYS_yield: {
       yield();
