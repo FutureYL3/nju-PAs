@@ -9,30 +9,30 @@ void do_syscall(Context *c) {
   a[2] = c->GPR3;
   a[3] = c->GPR4;
 
-  // char *name = NULL;
+  char *name = NULL;
 
   switch (a[0]) {
     case SYS_yield: {
       yield();
       c->GPRx = 0;
-      // name = "SYS_yield";
+      name = "SYS_yield";
       break;
     }
     case SYS_exit: {
       halt(a[1]);
-      // name = "SYS_exit";
+      name = "SYS_exit";
       break;
     }
     case SYS_write: {
       c->GPRx = write(a[1], (void *) a[2], a[3]);
-      // name = "SYS_write";
+      name = "SYS_write";
       break;
     }
     default: panic("Unhandled syscall ID = %d", a[0]);
   }
 
 #if STRACE
-  // if (name)  Log("syscall %s, with params a0=%d, a1=%d, a2=%d and ret=%d\n", name, a[1], a[2], a[3], c->GPRx);
+  if (name)  Log("syscall %s, with params a0=%d, a1=%d, a2=%d and ret=%d\n", name, a[1], a[2], a[3], c->GPRx);
 #endif
 }
 
@@ -50,7 +50,7 @@ ssize_t write(int fd, const void *buf, size_t count) {
     }
   
     default: {
-      // Log("error occur in syscall write for unknown fd: %d", fd);
+      Log("error occur in syscall write for unknown fd: %d", fd);
       return -1;
     }
   }
