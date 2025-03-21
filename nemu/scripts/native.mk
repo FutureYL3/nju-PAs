@@ -28,7 +28,7 @@ override ARGS ?= --log=$(BUILD_DIR)/nemu-log.txt
 override ARGS += $(ARGS_DIFF)
 
 ifdef CONFIG_FTRACE
-override ARGS += --ftrace=$(basename $(IMG)).elf
+override ARGS += --ftrace=$(basename $(IMG)).elf:$(shell dirname $(IMG))/ramdisk.img
 ifneq ($(findstring --ftracelog,$(ARGS)),)
 # ARGS中已经有--ftracelog选项，不需要再添加
 else

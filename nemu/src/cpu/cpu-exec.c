@@ -49,36 +49,32 @@ FuncSymbol *funcSymbols = NULL;
 FILE *ftrace_log = NULL;
 int indent_count = 0;
 int func_entry_count = 0;
-void init_ftrace(const char *ftrace_elf, const char *ftrace_log_file) {
-  FILE *fp = fopen(ftrace_elf, "rb");
-  if (!fp)
-    panic("Can not open ftrace_elf file\n"); 
 
+// --------------- 辅助函数：解析单个ELF文件 ---------------
+static FuncSymbol* parse_one_elf(const char *elf_file, int *out_count) {
+  FILE *fp = fopen(elf_file, "rb");
+  if (!fp)  panic("Can not open ftrace_elf file: %s\n", elf_file);
+  
   // 1. 读取 ELF 头部
   Elf32_Ehdr ehdr;
-  if (fread(&ehdr, 1, sizeof(ehdr), fp) != sizeof(ehdr)) 
-    panic("failed to read elf header\n");
-  if (memcmp(ehdr.e_ident, ELFMAG, SELFMAG) != 0) 
-    panic("Not an ELF file\n");
+  if (fread(&ehdr, 1, sizeof(ehdr), fp) != sizeof(ehdr))  panic("failed to read elf header: %s\n", elf_file);
+  if (memcmp(ehdr.e_ident, ELFMAG, SELFMAG) != 0)  panic("Not an ELF file: %s\n", elf_file);
   
   // 2. 读取节区头表
   Elf32_Shdr *shdrs = malloc(ehdr.e_shentsize * ehdr.e_shnum);
-  if (!shdrs) 
-    panic("malloc section headers failed\n");
+  if (!shdrs)  panic("malloc section headers failed\n");
   
   fseek(fp, ehdr.e_shoff, SEEK_SET);
-  if (fread(shdrs, ehdr.e_shentsize, ehdr.e_shnum, fp) != ehdr.e_shnum) 
-    panic("fread section headers failed\n");
+  if (fread(shdrs, ehdr.e_shentsize, ehdr.e_shnum, fp) != ehdr.e_shnum)  panic("fread section headers failed\n");
 
   // 3. 读取节区名称字符串表（用于解析各个节区名称）
   Elf32_Shdr shstr_hdr = shdrs[ehdr.e_shstrndx];
   char *shstrtab = malloc(shstr_hdr.sh_size);
   if (!shstrtab) 
     panic("malloc shstrtab failed\n");
-
+  
   fseek(fp, shstr_hdr.sh_offset, SEEK_SET);
-  if (fread(shstrtab, 1, shstr_hdr.sh_size, fp) != shstr_hdr.sh_size) 
-    panic("fread shstrtab failed\n");
+  if (fread(shstrtab, 1, shstr_hdr.sh_size, fp) != shstr_hdr.sh_size)  panic("fread shstrtab failed\n");
   
   // 4. 定位符号表节区 (.symtab) 以及它的关联字符串表 (.strtab)
   Elf32_Shdr *symtab_hdr = NULL;
@@ -92,66 +88,118 @@ void init_ftrace(const char *ftrace_elf, const char *ftrace_log_file) {
       break;
     }
   }
-  if (!symtab_hdr || !strtab_hdr) 
-    panic("Could not find symbol table or its string table\n");
-  
+  if (!symtab_hdr || !strtab_hdr) {
+    // 如果没有符号表，有的静态库可能会这样，这里就返回空数组
+    *out_count = 0;
+    free(shstrtab);
+    free(shdrs);
+    fclose(fp);
+    return NULL;
+  }
+
   // 5. 读取符号表数据到一个 Elf32_Sym 数组中
   int num_symbols = symtab_hdr->sh_size / symtab_hdr->sh_entsize;
   Elf32_Sym *symtab = malloc(symtab_hdr->sh_size);
-  if (!symtab) 
-    panic("malloc symtab failed\n");
+  if (!symtab)  panic("malloc symtab failed\n");
   
   fseek(fp, symtab_hdr->sh_offset, SEEK_SET);
-  if (fread(symtab, symtab_hdr->sh_entsize, num_symbols, fp) != num_symbols) 
-    panic("fread symtab failed\n");
+  if (fread(symtab, symtab_hdr->sh_entsize, num_symbols, fp) != num_symbols)  panic("fread symtab failed\n");
   
   // 6. 读取符号表对应的字符串表数据
   char *strtab = malloc(strtab_hdr->sh_size);
-  if (!strtab) 
-    panic("malloc strtab failed\n");
+  if (!strtab)  panic("malloc strtab failed\n");
 
+  
   fseek(fp, strtab_hdr->sh_offset, SEEK_SET);
-  if (fread(strtab, 1, strtab_hdr->sh_size, fp) != strtab_hdr->sh_size) 
-    panic("fread strtab failed\n");
+  if (fread(strtab, 1, strtab_hdr->sh_size, fp) != strtab_hdr->sh_size)  panic("fread strtab failed\n");
 
   fclose(fp);
 
-  // 7. 筛选出类型为函数（STT_FUNC）的符号条目
-  // 第一遍统计符合条件的符号数量
+  // 7. 筛选出类型为函数（STT_FUNC）的符号
+  int func_count_local = 0;
   for (int i = 0; i < num_symbols; i++) {
-    if (ELF32_ST_TYPE(symtab[i].st_info) == STT_FUNC)
-    func_entry_count++;
+    if (ELF32_ST_TYPE(symtab[i].st_info) == STT_FUNC)  func_count_local++;
   }
 
-  // 分配自定义结构体数组，用于存储函数符号
-  funcSymbols = malloc(func_entry_count * sizeof(FuncSymbol));
-  if (!funcSymbols) 
-    panic("malloc funcSymbols failed\n");
+  if (func_count_local == 0) {
+    // 没有任何函数符号，则返回 NULL
+    free(symtab);
+    free(strtab);
+    free(shstrtab);
+    free(shdrs);
+    *out_count = 0;
+    return NULL;
+  }
 
-  // 第二遍将符号条目存入自定义数组，并解析符号名称（复制字符串）
+  // 分配一个临时数组，存储当前文件的所有函数符号
+  FuncSymbol *localSymbols = malloc(func_count_local * sizeof(FuncSymbol));
+  if (!localSymbols)  panic("malloc localSymbols failed\n");
+  
+
   int j = 0;
   for (int i = 0; i < num_symbols; i++) {
     if (ELF32_ST_TYPE(symtab[i].st_info) == STT_FUNC) {
       // 使用 st_name 字段作为偏移量，在符号字符串表中查找名称
-      char *name = strdup(strtab + symtab[i].st_name);
-      if (!name) 
-        panic("strdup failed\n");
+      char *orig_name = strtab + symtab[i].st_name;
+      // strdup 一份
+      char *name = strdup(orig_name);
+      if (!name)  panic("strdup failed\n");
       
-      funcSymbols[j].name = name;
-      funcSymbols[j].value = symtab[i].st_value;
-      funcSymbols[j].size = symtab[i].st_size;
+      localSymbols[j].name  = name;
+      localSymbols[j].value = symtab[i].st_value;
+      localSymbols[j].size  = symtab[i].st_size;
       j++;
     }
   }
 
-	// 打开日志文件
-	ftrace_log = stdout;
-	if (ftrace_log_file != NULL) {
-		ftrace_log = fopen(ftrace_log_file, "w");
-		if (!ftrace_log)
-			panic("failed to open ftrace log file\n");
-	}
-	Log("Ftrace log is written to %s", ftrace_log_file ? ftrace_log_file : "stdout");
+  // 清理
+  free(symtab);
+  free(strtab);
+  free(shstrtab);
+  free(shdrs);
+
+  *out_count = func_count_local;
+  return localSymbols;
+}
+
+void init_ftrace(const char *ftrace_elf, const char *ftrace_log_file) {
+  // 先把 ftrace_elf 拷贝出来，以便用 strtok() 破坏性分割
+  char *elf_dup = strdup(ftrace_elf);
+  if (!elf_dup)  panic("strdup for ftrace_elf failed\n");
+
+  // 使用 strtok() 按冒号分割
+  char *token = strtok(elf_dup, ":");
+  while (token) {
+    // 解析一个 ELF
+    int local_count = 0;
+    FuncSymbol *local_syms = parse_one_elf(token, &local_count);
+
+    if (local_count > 0 && local_syms != NULL) {
+      // 全局数组扩容
+      // 先计算扩容后的大小
+      int new_size = func_entry_count + local_count;
+      funcSymbols = realloc(funcSymbols, new_size * sizeof(FuncSymbol));
+      if (!funcSymbols)  panic("realloc funcSymbols failed\n");
+      
+      // 将 local_syms 的内容拷贝过去
+      memcpy(funcSymbols + func_entry_count, local_syms, local_count * sizeof(FuncSymbol));
+      func_entry_count = new_size;
+
+      free(local_syms);  // 释放 parse_one_elf 中的临时数组
+    }
+
+    token = strtok(NULL, ":");
+  }
+
+  free(elf_dup);
+
+  // 打开日志文件
+  ftrace_log = stdout; // 默认写到 stdout
+  if (ftrace_log_file != NULL) {
+    ftrace_log = fopen(ftrace_log_file, "w");
+    if (!ftrace_log)  panic("failed to open ftrace log file: %s\n", ftrace_log_file);
+  }
+  Log("Ftrace log is written to %s\n", ftrace_log_file ? ftrace_log_file : "stdout");
 }
 #endif
 
