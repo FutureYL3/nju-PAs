@@ -67,7 +67,15 @@ int _write(int fd, void *buf, size_t count) {
 }
 
 void *_sbrk(intptr_t increment) {
-  return (void *)-1;
+  extern char end;
+  static char *addr = (char *) &end;
+
+  void *old_addr = (void *) addr, *new_addr = (void *) (addr + increment);
+  int ret = _syscall_(SYS_brk, new_addr, 0, 0);
+  if (ret < 0)  return (void *) -1;
+
+  addr = new_addr;
+  return old_addr;
 }
 
 int _read(int fd, void *buf, size_t count) {
