@@ -28,12 +28,13 @@ override ARGS ?= --log=$(BUILD_DIR)/nemu-log.txt
 override ARGS += $(ARGS_DIFF)
 
 ifdef CONFIG_FTRACE
-override ARGS += --ftrace=$(basename $(IMG)).elf:$(shell dirname $(IMG))/ramdisk.img
+override ARGS += --ftrace=$(patsubst %.bin,%.elf,$(IMG)):$(dir $(IMG))ramdisk.img
+
 ifneq ($(findstring --ftracelog,$(ARGS)),)
 # ARGS中已经有--ftracelog选项，不需要再添加
 else
 # ARGS中没有--ftracelog选项，需要添加
-override ARGS += --ftracelog=$(BUILD_DIR)/ftrace-log.txt
+override ARGS += --ftracelog $(BUILD_DIR)/ftrace-log.txt
 endif
 endif
 
