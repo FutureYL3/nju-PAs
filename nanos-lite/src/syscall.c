@@ -32,7 +32,7 @@ void do_syscall(Context *c) {
   }
 
 #if STRACE
-  if (name)  Log("syscall %s, with params a0=%d, a1=%d, a2=%d and ret=%d\n", name, a[1], a[2], a[3], c->GPRx);
+  // if (name)  Log("syscall %s, with params a0=%d, a1=%d, a2=%d and ret=%d\n", name, a[1], a[2], a[3], c->GPRx);
 #endif
 }
 
@@ -50,7 +50,7 @@ ssize_t write(int fd, const void *buf, size_t count) {
     }
   
     default: {
-      // Log("error occur in syscall write for unknown fd: %d", fd);
+      Log("error occur in syscall write for unknown fd: %d", fd);
       return -1;
     }
   }
