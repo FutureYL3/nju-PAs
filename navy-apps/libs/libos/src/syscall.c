@@ -71,7 +71,7 @@ void *_sbrk(intptr_t increment) {
   static char *addr = (char *) &end;
 
   void *old_addr = (void *) addr, *new_addr = (void *) (addr + increment);
-  int ret = _syscall_(SYS_brk, new_addr, 0, 0);
+  int ret = _syscall_(SYS_brk, (intptr_t) new_addr, 0, 0);
   if (ret < 0)  return (void *) -1;
 
   addr = new_addr;
