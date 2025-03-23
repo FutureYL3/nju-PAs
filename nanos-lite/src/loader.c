@@ -49,6 +49,7 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
 
 	// Elf_Phdr * phdr_table = (Elf_Phdr *) ((char *) &ramdisk_start + phoff);
 	for (int i = 0; i < phnum; ++ i) {
+    fs_lseek(fd, phoff + i * sizeof(Elf_Phdr), SEEK_SET);
 		Elf_Phdr phdr = {};
     if (fs_read(fd, &phdr, sizeof(phdr)) != sizeof(phdr)) {
       panic("Failed to load program %s because can't read segment head %d", filename, i);
