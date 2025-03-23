@@ -1,6 +1,7 @@
 #include <proc.h>
 #include <elf.h>
 #include <fs.h>
+#include <common.h>
 
 #ifdef __LP64__
 # define Elf_Ehdr Elf64_Ehdr
@@ -62,7 +63,7 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
         panic("Failed to load program %s because can't read total segment %d to buffer", filename, i);
       }
       memcpy(vmem_addr, (void *) buf, filesz);
-      free(buf);
+      // free(buf);
 			// ramdisk_read(vmem_addr, offset, filesz);
 			if (memsz > filesz) {
 				void *fileend = (void *) ((char *) vmem_addr + filesz);
