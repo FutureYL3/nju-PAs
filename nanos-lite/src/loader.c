@@ -71,7 +71,7 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
 				void *fileend = (void *) ((char *) vmem_addr + filesz);
 				memset(fileend, 0, memsz - filesz);
 			}
-      printf("vmem_addr = %p, offset = %d, filesz = %d, memsz = %d\n", vmem_addr, offset, filesz, memsz);
+      printf("vmem_addr = %p, offset = %x, filesz = %x, memsz = %x\n", vmem_addr, offset, filesz, memsz);
 		}
 	}
 
