@@ -1,6 +1,8 @@
 #include <common.h>
+#include <fs.h>
 #include "syscall.h"
 
+int brk(void *addr);
 
 void do_syscall(Context *c) {
   uintptr_t a[4];
@@ -19,9 +21,21 @@ void do_syscall(Context *c) {
       halt(a[1]);
       break;
     }
+    case SYS_open: {
+
+    }
+    case SYS_read: {
+
+    }
     case SYS_write: {
-      c->GPRx = write(a[1], (void *) a[2], a[3]);
+      c->GPRx = fs_write(a[1], (void *) a[2], a[3]);
       break;
+    }
+    case SYS_lseek: {
+
+    }
+    case SYS_close: {
+
     }
     case SYS_brk: {
       c->GPRx = brk((void *) a[1]);
@@ -40,28 +54,6 @@ void do_syscall(Context *c) {
   }
   if (name)  Log("syscall %s, with params a0=%d, a1=%d, a2=%d and ret=%d", name, a[1], a[2], a[3], c->GPRx);
 #endif
-}
-
-ssize_t write(int fd, const void *buf, size_t count) {
-  ssize_t written = 0;
-  switch (fd) {
-    /* for stdout and stderr */
-    case 1: case 2: {
-      char *p = (char *) buf;
-      for (int i = 0; i < count; ++ i)  {
-        putch(p[i]);
-        ++written;
-      }
-      break;
-    }
-  
-    default: {
-      Log("error occur in syscall write for unknown fd: %d", fd);
-      return -1;
-    }
-  }
-
-  return written;
 }
 
 int brk(void *addr) {

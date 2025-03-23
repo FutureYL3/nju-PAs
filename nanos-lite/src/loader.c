@@ -1,5 +1,6 @@
 #include <proc.h>
 #include <elf.h>
+#include <fs.h>
 
 #ifdef __LP64__
 # define Elf_Ehdr Elf64_Ehdr
@@ -24,25 +25,43 @@ extern char ramdisk_start[];
 extern char ramdisk_end[];
 
 static uintptr_t loader(PCB *pcb, const char *filename) {
-	/* Only for single program in ramdisk */
-	Elf_Ehdr *ehdr = (Elf_Ehdr *) &ramdisk_start;
-	// check for magic number
-	assert(*(uint32_t *)ehdr->e_ident == 0x464c457f); // for little endian check
-	// check for ISA type
-	assert(ehdr->e_machine == EXPECT_TYPE);
-	// load to memory
-	uint16_t phnum = ehdr->e_phnum;
-	uint16_t phoff = ehdr->e_phoff;
+  /* we do not use flags and mode */
+	int fd = fs_open(filename, 0, 0);
+	/* get ELF header */
+  Elf_Ehdr ehdr = {};
+  if (fs_read(fd, &ehdr, sizeof(Elf_Ehdr)) < 0) {
+    panic("Failed to load program %s because can't open file", filename);
+  }
 
-	Elf_Phdr * phdr_table = (Elf_Phdr *) ((char *) &ramdisk_start + phoff);
+	/* check for magic number */
+	assert(*(uint32_t *)ehdr.e_ident == 0x464c457f); // for little endian check
+	/* check for ISA type */
+	assert(ehdr.e_machine == EXPECT_TYPE);
+
+	/* get number of segments to be loaded and offset of Elf_Phdr */
+	uint32_t phnum = ehdr.e_phnum;
+	uint32_t phoff = ehdr.e_phoff;
+  /* set file open offset to phoff */
+  fs_lseek(fd, phoff, SEEK_SET);
+
+	// Elf_Phdr * phdr_table = (Elf_Phdr *) ((char *) &ramdisk_start + phoff);
 	for (int i = 0; i < phnum; ++ i) {
-		Elf_Phdr *phdr = &phdr_table[i];
-		if (phdr->p_type == PT_LOAD) {
-			void * vmem_addr = (void *) phdr->p_vaddr;
-			size_t offset = phdr->p_offset;
-			size_t filesz = phdr->p_filesz;
-			size_t memsz = phdr->p_memsz;
-			ramdisk_read(vmem_addr, offset, filesz);
+		Elf_Phdr phdr = {};
+    if (fs_read(fd, &phdr, sizeof(phdr)) != sizeof(phdr)) {
+      panic("Failed to load program %s because can't read segment head %d", filename, i);
+    }
+		if (phdr.p_type == PT_LOAD) {
+			void * vmem_addr = (void *) phdr.p_vaddr;
+			size_t offset = phdr.p_offset;
+			size_t filesz = phdr.p_filesz;
+			size_t memsz = phdr.p_memsz;
+      char buf[filesz];
+      fs_lseek(fd, offset, SEEK_SET);
+      if (fs_read(fd, (void *) buf, filesz) != filesz) {
+        panic("Failed to load program %s because can't read total segment %d to buffer", filename, i);
+      }
+      memcpy(vmem_addr, (void *) buf, filesz);
+			// ramdisk_read(vmem_addr, offset, filesz);
 			if (memsz > filesz) {
 				void *fileend = (void *) ((char *) vmem_addr + filesz);
 				memset(fileend, 0, memsz - filesz);
@@ -50,7 +69,7 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
 		}
 	}
 
-	return (uintptr_t)ehdr->e_entry;	
+	return (uintptr_t) ehdr.e_entry;	
 }
 
 void naive_uload(PCB *pcb, const char *filename) {
