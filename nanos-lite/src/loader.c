@@ -28,6 +28,7 @@ extern char ramdisk_end[];
 static uintptr_t loader(PCB *pcb, const char *filename) {
   /* we do not use flags and mode */
 	int fd = fs_open(filename, 0, 0);
+  printf("get fd = %d\n", fd);
 	/* get ELF header */
   Elf_Ehdr ehdr = {};
   if (fs_read(fd, &ehdr, sizeof(Elf_Ehdr)) < 0) {
@@ -44,6 +45,7 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
 	uint32_t phoff = ehdr.e_phoff;
   /* set file open offset to phoff */
   fs_lseek(fd, phoff, SEEK_SET);
+  printf("get phnum = %x, phoff = %x\n", phnum, phoff);
 
 	// Elf_Phdr * phdr_table = (Elf_Phdr *) ((char *) &ramdisk_start + phoff);
 	for (int i = 0; i < phnum; ++ i) {
@@ -69,6 +71,7 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
 				void *fileend = (void *) ((char *) vmem_addr + filesz);
 				memset(fileend, 0, memsz - filesz);
 			}
+      printf("vmem_addr = %p, offset = %d, filesz = %d, memsz = %d\n", vmem_addr, offset, filesz, memsz);
 		}
 	}
 
