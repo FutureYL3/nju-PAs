@@ -56,8 +56,8 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
 			size_t offset = phdr.p_offset;
 			size_t filesz = phdr.p_filesz;
 			size_t memsz = phdr.p_memsz;
-      // char *buf = (char *) malloc(filesz);
-      char buf[filesz];
+      char *buf = (char *) malloc(filesz);
+      // char buf[filesz];
       fs_lseek(fd, offset, SEEK_SET);
       if (fs_read(fd, (void *) buf, filesz) != filesz) {
         panic("Failed to load program %s because can't read total segment %d to buffer", filename, i);
