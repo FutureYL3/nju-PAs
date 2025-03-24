@@ -13,13 +13,13 @@ int main() {
   cur_sec = tv.tv_sec;
   cur_usec = tv.tv_usec;
   int count = 1;
-  printf("start time: %d.%d\n", cur_sec, cur_usec);
+  printf("start time: %ld.%ld\n", cur_sec, cur_usec);
   while (1) {
     ret = gettimeofday(&tv, NULL);
     if (ret < 0) {
       printf("Failed to get systime at %d times\n", count);
     }
-    printf("current time: %d.%d\n", tv.tv_sec, tv.tv_usec);
+    printf("current time: %ld.%ld\n", tv.tv_sec, tv.tv_usec);
     if (tv.tv_sec == cur_sec) {
       /* tolerate 100000 us(0.1s) diff */
       if (tv.tv_usec - cur_usec > 450000 && tv.tv_usec - cur_usec < 550000) {

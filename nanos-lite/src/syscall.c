@@ -20,14 +20,6 @@ struct timezone {
   int tz_dsttime;
 };
 
-static file files[] = {
-  [0] = {"stdin", 0, 0},
-  [1] = {"stdout", 0, 0},
-  [2] = {"stderr", 0, 0},
-  [3] = {"/dev/serial", 0, 0},
-#include "files.h"
-};
-
 int brk(void *addr);
 int gettimeofday(struct timeval *tv, struct timezone *tz);
 
@@ -80,6 +72,13 @@ void do_syscall(Context *c) {
   }
 
 #if STRACE
+static file files[] = {
+  [0] = {"stdin", 0, 0},
+  [1] = {"stdout", 0, 0},
+  [2] = {"stderr", 0, 0},
+  [3] = {"/dev/serial", 0, 0},
+#include "files.h"
+};
   char *name = NULL;
   bool is_sfs_call = false;
   char *file_name = NULL;
