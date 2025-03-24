@@ -12,7 +12,7 @@ int main() {
   }
   cur_sec = tv.tv_sec;
   cur_usec = tv.tv_usec;
-  int count = 1;
+  int count = 0;
   // printf("start time: %ld.%ld\n", cur_sec, cur_usec);
   while (1) {
     ret = gettimeofday(&tv, NULL);
@@ -23,7 +23,8 @@ int main() {
     if (tv.tv_sec == cur_sec) {
       /* tolerate 100000 us(0.1s) diff */
       if (tv.tv_usec - cur_usec > 450000 && tv.tv_usec - cur_usec < 550000) {
-        printf("already pass %d 0.5s\n", count++);
+        // printf("already pass %d 0.5s\n", count++);
+        ++count;
       }
       else continue;
     }
@@ -31,10 +32,13 @@ int main() {
       long us = tv.tv_usec + 1000000;
       /* tolerate 100000 us(0.1s) diff */
       if (us - cur_usec > 450000 && us - cur_usec < 550000) {
-        printf("already pass %d 0.5s\n", count++);
+        // printf("already pass %d 0.5s\n", count++);
+        ++count;
       }
       else continue;
     }
+
+    if (count % 2 == 0)  printf("already pass %ds\n", count / 2);
 
     cur_sec = tv.tv_sec;
     cur_usec = tv.tv_usec;
