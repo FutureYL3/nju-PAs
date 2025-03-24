@@ -28,7 +28,7 @@ extern char ramdisk_end[];
 static uintptr_t loader(PCB *pcb, const char *filename) {
   /* we do not use flags and mode */
 	int fd = fs_open(filename, 0, 0);
-  printf("get fd = %d\n", fd);
+  // printf("get fd = %d\n", fd);
 	/* get ELF header */
   Elf_Ehdr ehdr = {};
   if (fs_read(fd, &ehdr, sizeof(Elf_Ehdr)) < 0) {
