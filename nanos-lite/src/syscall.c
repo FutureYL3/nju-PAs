@@ -2,7 +2,7 @@
 #include <fs.h>
 #include "syscall.h"
 
-#define STRACE 1
+#define STRACE 0
 
 typedef struct file {
   char *name;
