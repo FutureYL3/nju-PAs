@@ -30,14 +30,15 @@ size_t events_read(void *buf, size_t offset, size_t len) {
   if (keycode == 0)  return 0;
 
   const char *key_name = keyname[keycode];
+  char buffer[64] = {0};
   char *key_op = keydown ? "kd " : "ku ";
-  char *key_event = strcat(key_op, key_name);
+  strcpy(buffer, key_op); strcat(buffer, key_name);
   char *p = (char *) buf;
   int written = 0;
   /* write at most len - 1 characters due to making room for \n */
-  while (*key_event != '\0' && written < len - 1) {
-    p[written++] = *key_event;
-    ++key_event;
+  for (int i = 0; i < len - 1 && buffer[i] != '\0'; ++ i) {
+    p[i] = buffer[i];
+    written++;
   }
   p[written++] = '\n';
   return written;
