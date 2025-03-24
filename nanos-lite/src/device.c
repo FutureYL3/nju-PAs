@@ -29,6 +29,7 @@ size_t events_read(void *buf, size_t offset, size_t len) {
   /* no valid key event, return 0 and do nothing on `buf` */
   if (keycode == 0)  return 0;
 
+  memset(buf, 0, len);
   const char *key_name = keyname[keycode];
   char buffer[64] = {0};
   char *key_op = keydown ? "kd " : "ku ";
