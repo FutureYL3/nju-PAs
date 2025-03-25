@@ -3,23 +3,64 @@
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 
 #define not_implemented 0
 
 /* move the function out of condition compilation block if implemented */
 #if not_implemented
+
+void SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color) {
+}
+#endif
+
 void SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect) {
   assert(dst && src);
   assert(dst->format->BitsPerPixel == src->format->BitsPerPixel);
 }
 
-void SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color) {
-}
-
+/* 
+  Makes sure the given area is updated on the given screen. 
+  The rectangle must be confined within the screen boundaries (no clipping is done). 
+*/
 void SDL_UpdateRect(SDL_Surface *s, int x, int y, int w, int h) {
+  if (s == NULL) return;
+  if (w < 0 || h < 0) return;
+  /* If 'x', 'y', 'w' and 'h' are all 0, SDL_UpdateRect will update the entire screen. */
+  if (w == 0 && h == 0 && x == 0 && y == 0) {
+    w = s->w;
+    h = s->h;
+  }
+  /* check for pixel representation mode */
+  if (s->format->BitsPerPixel == 32) {
+    /* 32 bits color mode */
+    uint32_t *pixels = (uint32_t *)s->pixels + y * (s->pitch / 4) + x;
+    NDL_DrawRect(pixels, x, y, w, h);
+  } 
+  else if (s->format->BitsPerPixel == 8) {
+    /* palette mode */
+    uint32_t *pixels = malloc(w * h * sizeof(uint32_t));
+    if (pixels == NULL) {
+      fprintf(stderr, "Failed to allocate memory for pixel buffer at palette mode\n");
+      return;
+    }
+
+    uint8_t *src = (uint8_t *)s->pixels + y * s->pitch + x;
+    SDL_Color *colors = s->format->palette->colors;
+    
+    for (int i = 0; i < h; i++) {
+      for (int j = 0; j < w; j++) {
+        uint8_t idx = src[i * s->pitch + j];
+        SDL_Color color = colors[idx];
+        pixels[i * w + j] = (color.a << 24) | (color.r << 16) | (color.g << 8) | color.b;
+      }
+    }
+    
+    NDL_DrawRect(pixels, x, y, w, h);
+    free(pixels);
+  }
 }
-#endif
 
 // APIs below are already implemented.
 
