@@ -42,6 +42,9 @@ int SDL_WaitEvent(SDL_Event *event) {
       buf[2] = '\0';
       char *key_op = buf;
       char *key_name = buf + 3;
+      printf("%s\n", key_op);
+      printf("%s\n", key_name);
+
 
       if (strcmp(key_op, "kd") == 0) {
         event->type = SDL_KEYDOWN;
