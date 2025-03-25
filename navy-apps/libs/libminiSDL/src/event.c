@@ -53,6 +53,8 @@ int SDL_WaitEvent(SDL_Event *event) {
         event->type = SDL_KEYUP;
       }
 
+      printf("%d\n", event->type);
+
       for (int i = 0; i < NR_KEYS; ++ i) {
         if (strcmp(key_name, keyname[i]) == 0)  {
           printf("%d\n", i);
