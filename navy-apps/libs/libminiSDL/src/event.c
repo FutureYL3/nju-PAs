@@ -34,29 +34,33 @@ uint8_t* SDL_GetKeyState(int *numkeys) {
 #endif
 
 int SDL_WaitEvent(SDL_Event *event) {
-  char buf[64] = {0}; // 64 should be enough
-  int ret = NDL_PollEvent(buf, sizeof(buf));
-  /* None event */
-  if (ret == 0)  return 1;
+  while (true) {
+    char buf[64] = {0};
+    int ret = NDL_PollEvent(buf, sizeof(buf));
 
-  // char *key_op = strtok(buf, " ");
-  // char *key_name = strtok(NULL, " ");
-  // printf("%s\n", buf);
-  buf[2] = '\0';
-  // printf("%s\n", buf);
-  char *key_op = buf;
-  char *key_name = buf + 3;
-  printf("%s\n", key_op);
-  printf("%s\n", key_name);
+    if (ret == 1) {
+      buf[2] = '\0';
+      char *key_op = buf;
+      char *key_name = buf + 3;
 
-  /* for type */
-  if (strcmp(key_op, "kd") == 0)      event->type = SDL_KEYDOWN;
-  else if (strcmp(key_op, "ku") == 0) event->type = SDL_KEYUP;
-  /* for keysym */
-  for (int i = 0; i < NR_KEYS; ++ i) {
-    if (strcmp(key_name, keyname[i]) == 0)  {
-      event->key.keysym.sym = i;
-      break;
+      if (strcmp(key_op, "kd") == 0) {
+        event->type = SDL_KEYDOWN;
+      } 
+      else if (strcmp(key_op, "ku") == 0) {
+        event->type = SDL_KEYUP;
+      }
+
+      for (int i = 0; i < NR_KEYS; ++ i) {
+        if (strcmp(key_name, keyname[i]) == 0)  {
+          printf("%d\n", i);
+          event->key.keysym.sym = i;
+          break;
+        }
+      }
+
+      return 1;
     }
   }
+
+  return 0;
 }
