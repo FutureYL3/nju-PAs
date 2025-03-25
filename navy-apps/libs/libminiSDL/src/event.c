@@ -41,7 +41,9 @@ int SDL_WaitEvent(SDL_Event *event) {
 
   // char *key_op = strtok(buf, " ");
   // char *key_name = strtok(NULL, " ");
+  printf("%s\n", buf);
   buf[2] = '\0';
+  printf("%s\n", buf);
   char *key_op = buf;
   char *key_name = buf + 3;
   /* for type */
