@@ -41,11 +41,14 @@ int SDL_WaitEvent(SDL_Event *event) {
 
   // char *key_op = strtok(buf, " ");
   // char *key_name = strtok(NULL, " ");
-  printf("%s\n", buf);
+  // printf("%s\n", buf);
   buf[2] = '\0';
-  printf("%s\n", buf);
+  // printf("%s\n", buf);
   char *key_op = buf;
   char *key_name = buf + 3;
+  printf("%s\n", key_op);
+  printf("%s\n", key_name);
+
   /* for type */
   if (strcmp(key_op, "kd") == 0)      event->type = SDL_KEYDOWN;
   else if (strcmp(key_op, "ku") == 0) event->type = SDL_KEYUP;
