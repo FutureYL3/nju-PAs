@@ -1,6 +1,10 @@
 #include <NDL.h>
 #include <SDL.h>
 
+#define not_implemented 0
+
+/* move the function out of condition compilation block if implemented */
+#if not_implemented
 int SDL_OpenAudio(SDL_AudioSpec *desired, SDL_AudioSpec *obtained) {
   return 0;
 }
@@ -26,3 +30,7 @@ void SDL_LockAudio() {
 
 void SDL_UnlockAudio() {
 }
+#endif
+
+
+

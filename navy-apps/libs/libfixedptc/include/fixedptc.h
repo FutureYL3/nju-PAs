@@ -127,34 +127,56 @@ typedef	__uint128_t fixedptud;
 
 /* Multiplies a fixedpt number with an integer, returns the result. */
 static inline fixedpt fixedpt_muli(fixedpt A, int B) {
-	return 0;
+	return (fixedpt) (A * B);
 }
 
 /* Divides a fixedpt number with an integer, returns the result. */
 static inline fixedpt fixedpt_divi(fixedpt A, int B) {
-	return 0;
+	return (fixedpt) (A / B);
 }
 
 /* Multiplies two fixedpt numbers, returns the result. */
 static inline fixedpt fixedpt_mul(fixedpt A, fixedpt B) {
-	return 0;
+	/* do A * B first for max precision, but may overflow */
+	return (fixedpt) (A * B / FIXEDPT_ONE);
 }
 
 
 /* Divides two fixedpt numbers, returns the result. */
 static inline fixedpt fixedpt_div(fixedpt A, fixedpt B) {
-	return 0;
+	/* do A * FIXEDPT_ONE first for max precision, but may overflow */
+	return (fixedpt) (A * FIXEDPT_ONE / B );
 }
 
 static inline fixedpt fixedpt_abs(fixedpt A) {
-	return 0;
+	return A < 0 ? fixedpt(-A) : A;
 }
 
 static inline fixedpt fixedpt_floor(fixedpt A) {
+	if (A > 0) {
+		/* check whether is integral */
+		if (A & FIXEDPT_FMASK == 0)  return A;
+		else  return ((A >> FIXEDPT_FBITS) * FIXEDPT_ONE);
+	}
+	else if (A < 0) {
+		if (A & FIXEDPT_FMASK == 0)  return A;
+		else  return (((A >> FIXEDPT_FBITS) - 1) * FIXEDPT_ONE);
+	}
+	/* A can only be 0 */
 	return 0;
 }
 
 static inline fixedpt fixedpt_ceil(fixedpt A) {
+	if (A > 0) {
+		/* check whether is integral */
+		if (A & FIXEDPT_FMASK == 0)  return A;
+		else  return (((A >> FIXEDPT_FBITS) + 1) * FIXEDPT_ONE);
+	}
+	else if (A < 0) {
+		if (A & FIXEDPT_FMASK == 0)  return A;
+		else  return ((A >> FIXEDPT_FBITS) * FIXEDPT_ONE);
+	}
+	/* A can only be 0 */
 	return 0;
 }
 

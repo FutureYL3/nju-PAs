@@ -8,6 +8,11 @@ static const char *keyname[] = {
   _KEYS(keyname)
 };
 
+
+#define not_implemented 0
+
+/* move the function out of condition compilation block if implemented */
+#if not_implemented
 int SDL_PushEvent(SDL_Event *ev) {
   return 0;
 }
@@ -27,3 +32,4 @@ int SDL_PeepEvents(SDL_Event *ev, int numevents, int action, uint32_t mask) {
 uint8_t* SDL_GetKeyState(int *numkeys) {
   return NULL;
 }
+#endif
