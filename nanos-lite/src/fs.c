@@ -13,7 +13,7 @@ typedef struct {
   size_t open_offset;
 } Finfo;
 
-enum {FD_STDIN, FD_STDOUT, FD_STDERR, FD_SERIAL, FD_EVENTS, FD_FB};
+enum {FD_STDIN, FD_STDOUT, FD_STDERR, FD_SERIAL, FD_EVENTS, FD_FB, FD_DISPINFO};
 
 size_t invalid_read(void *buf, size_t offset, size_t len) {
   panic("should not reach here");
@@ -27,6 +27,8 @@ size_t invalid_write(const void *buf, size_t offset, size_t len) {
 
 size_t serial_write(const void *buf, size_t offset, size_t len);
 size_t events_read(void *buf, size_t offset, size_t len);
+size_t dispinfo_read(void *buf, size_t offset, size_t len);
+size_t fb_write(const void *buf, size_t offset, size_t len);
 
 /* This is the information about all files in disk. */
 static Finfo file_table[] __attribute__((used)) = {
@@ -35,6 +37,9 @@ static Finfo file_table[] __attribute__((used)) = {
   [FD_STDERR] = {"stderr", 0, 0, invalid_read, serial_write, 0},
   [FD_SERIAL] = {"/dev/serial", 0, 0, invalid_read, serial_write, 0},
   [FD_EVENTS] = {"/dev/events", 0, 0, events_read, invalid_write, 0},
+  /* file size of frame buffer should be initialized */
+  [FD_FB] = {"/dev/fb", 0, 0, invalid_read, fb_write, 0},
+  [FD_DISPINFO] = {"/proc/dispinfo", 0, 0, dispinfo_read, invalid_write, 0},
 #include "files.h"
 };
 
@@ -42,6 +47,9 @@ static Finfo file_table[] __attribute__((used)) = {
 
 void init_fs() {
   // TODO: initialize the size of /dev/fb
+  /* initialize the size of /dev/fb */
+
+
 }
 
 size_t ramdisk_read(void *buf, size_t offset, size_t len);
@@ -67,11 +75,17 @@ size_t fs_read(int fd, void *buf, size_t len) {
   }
 
   if (file_table[fd].read != NULL) {
-    /* for events device */
-    if (fd == FD_EVENTS) {
-      /* no offset specified because events is not block device */
-      size_t ret = file_table[FD_EVENTS].read(buf, 0, len);
-      return ret;
+    switch (fd) {
+      /* for events device */
+      case FD_EVENTS: {
+        /* no offset specified because events is not block device */
+        size_t ret = file_table[FD_EVENTS].read(buf, 0, len);
+        return ret;
+      }
+      case FD_DISPINFO: {
+        size_t ret = file_table[FD_DISPINFO].read(buf, 0, len);
+        return ret;
+      }
     }
 
     /* call function to trigger panic */

@@ -374,7 +374,84 @@ int sprintf(char *out, const char *fmt, ...) {
 }
 
 int snprintf(char *out, size_t n, const char *fmt, ...) {
-  panic("Not implemented");
+  va_list ap;
+  va_start(ap, fmt);
+  int len = 0;  
+
+#define WRITE_CHAR(c)         \
+  do {                        \
+    if (len < (int)(n - 1)) { \
+      out[len] = (c);         \
+    }                         \
+    len++;                    \
+  } while (0)
+
+  while (*fmt) {
+    if (*fmt == '%') {
+      ++fmt;
+      if (!*fmt)  panic("%% at the end of the format string\n");
+      
+      switch (*fmt) {
+        case 's': {
+          char *str = va_arg(ap, char *);
+          while (*str) {
+            WRITE_CHAR(*str);
+            str++;
+          }
+          break;
+        }
+        case 'd': {
+          int num = va_arg(ap, int);
+          int is_neg = 0, is_min = 0;
+          char buf[12];
+          int i = 0;
+
+          if (num == 0) {
+            WRITE_CHAR('0');
+            break;
+          }
+
+          if (num < 0) {
+            is_neg = 1;
+            if (num == INT_MIN) {
+              is_min = 1;
+              num = INT_MAX;
+            } 
+            else {
+              num = -num;
+            }
+          }
+
+          while (num) {
+            buf[i++] = (num % 10) + '0';
+            num /= 10;
+          }
+          if (is_neg)  buf[i++] = '-';
+          
+          for (int j = i - 1; j >= 0; j--)  WRITE_CHAR(buf[j]);
+          
+          if (is_min && i > 0) {
+            int pos = len - 1;
+            if (pos < (int)(n - 1))  out[pos] = out[pos] + 1;
+          }
+          break;
+        }
+        default:  halt(1);
+      }
+    } 
+    else {
+      WRITE_CHAR(*fmt);
+    }
+    ++fmt;
+  }
+
+  if (n > 0) {
+    if (len < (int)n)  out[len] = '\0';
+    else               out[n - 1] = '\0';
+  }
+  va_end(ap);
+  return len;
+  #undef WRITE_CHAR
 }
 
 int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {

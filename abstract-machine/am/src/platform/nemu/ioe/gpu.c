@@ -2,7 +2,7 @@
 #include <nemu.h>
 
 #define SYNC_ADDR (VGACTL_ADDR + 4)
-#define N 32
+#define N 4
 
 void __am_gpu_init() {
 }

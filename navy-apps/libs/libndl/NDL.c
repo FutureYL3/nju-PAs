@@ -30,6 +30,13 @@ int NDL_PollEvent(char *buf, int len) {
 }
 
 void NDL_OpenCanvas(int *w, int *h) {
+  if (*w > screen_w || *h > screen_h) {
+    fprintf(stderr, "Canvas width/height exceeds screen width/height\n");
+    return;
+  }
+
+  printf("The screen size: width %d, height %d\n", screen_w, screen_h);
+  printf("The canvas size: width %d, height %d\n", *w, *h);
   if (getenv("NWM_APP")) {
     int fbctl = 4;
     fbdev = 5;
@@ -67,6 +74,28 @@ int NDL_QueryAudio() {
 }
 
 int NDL_Init(uint32_t flags) {
+  /* Initialization for screen width and height */
+  int fd = open("/proc/dispinfo", 0, 0); // we do not use flags and mode
+  char buf[64] = {0}; // 64 should be enough
+  read(fd, buf, sizeof(buf));
+  close(fd);
+  /* 5 lines should be enough */
+  char *lines[5];
+  int num_lines = 0;
+  char *line = strtok(buf, "\n");
+  while (line != NULL && num_lines < 5) {
+    lines[num_lines++] = line;
+    line = strtok(NULL, "\n");
+  }
+  for (int i = 0; i < num_lines; i++) {
+    char *key = strtok(lines[i], " :");
+    char *value = strtok(NULL, " :");
+    if (key && value) {
+      if (strcmp(key, "WIDTH") == 0)          screen_w = atoi(value);
+      else if (strcmp(key, "HEIGHT") == 0)    screen_h = atoi(value);
+    }
+  }
+
   if (getenv("NWM_APP")) {
     evtdev = 3;
   }
