@@ -154,4 +154,56 @@ int memcmp(const void *s1, const void *s2, size_t n) {
 	return 0;
 }
 
+char *strtok(char *str, const char *delim) {
+  static char *s = NULL;
+  if (str != NULL)  s = str;
+  
+  if (s == NULL)  return NULL;
+
+  int delim_len = strlen(delim);
+  // skip the beginning delim
+  while (*s != '\0') {
+    int i;
+    for (i = 0; i < delim_len; i++) {
+      if (*s == delim[i])  break;
+    }
+    if (i < delim_len) {  // *s is delim
+      *s = '\0';
+      s++;
+    } 
+    else  break;
+  }
+  if (*s == '\0')  return NULL;  // s doesn't contain any non-delim and non-\0 character
+
+  char *ret = s;
+  /* find first delim */
+  while (*s != '\0') {
+    int i;
+    for (i = 0; i < delim_len; i++) {
+      if (*s == delim[i])  break;
+    }
+    if (i < delim_len)  break;
+
+    s++;
+  }
+  /* set the consecutive delim to `\0` if has any */
+  if (*s != '\0') {
+    while (*s != '\0') {
+      int found = 0;
+      for (int i = 0; i < delim_len; i++) {
+        if (*s == delim[i]) {
+          *s = '\0';
+          found = 1;
+          s++;
+          break;
+        }
+      }
+      if (!found)  break;
+    }
+  }
+
+  return ret;
+}
+
+
 #endif

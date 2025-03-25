@@ -9,6 +9,7 @@
 static int evtdev = -1;
 static int fbdev = -1;
 static int screen_w = 0, screen_h = 0;
+static int canvas_w = 0, canvas_h = 0;
 
 uint32_t NDL_GetTicks() {
   struct timeval tz = {};
@@ -29,14 +30,22 @@ int NDL_PollEvent(char *buf, int len) {
   return 1;
 }
 
+/* currently, we set canvas to the left-top corner of the screen */
 void NDL_OpenCanvas(int *w, int *h) {
   if (*w > screen_w || *h > screen_h) {
     fprintf(stderr, "Canvas width/height exceeds screen width/height\n");
     return;
   }
+  if (*w == 0 && *h == 0) {
+    *w = screen_w;
+    *h = screen_h;
+  }
 
-  printf("The screen size: width %d, height %d\n", screen_w, screen_h);
-  printf("The canvas size: width %d, height %d\n", *w, *h);
+  canvas_w = *w;
+  canvas_h = *h;
+
+  // printf("The screen size: width %d, height %d\n", screen_w, screen_h);
+  // printf("The canvas size: width %d, height %d\n", *w, *h);
   if (getenv("NWM_APP")) {
     int fbctl = 4;
     fbdev = 5;
@@ -56,7 +65,28 @@ void NDL_OpenCanvas(int *w, int *h) {
   }
 }
 
+int fd = -1;
+/* this function's target is canvas, not screen */
 void NDL_DrawRect(uint32_t *pixels, int x, int y, int w, int h) {
+  if (!pixels || w <= 0 || h <= 0)  return;
+  
+  // check for border
+  if (x < 0 || y < 0 || x + w > canvas_w || y + h > canvas_h) {
+    return;
+  }
+  /* in sfs, flags and mode are not used */
+  if (fd == -1)  fd = open("/dev/fb", 0, 0);  
+  uint32_t offset = (screen_w * y + x) * 4;
+  uint32_t *p = pixels;
+  lseek(fd, offset, SEEK_SET);
+  
+  for (int i = 0; i < h; ++ i) {
+    write(fd, (void *) p, w * 4);
+    offset += screen_w * 4;
+    p += w;
+    lseek(fd, offset, SEEK_SET);
+  }
+  
 }
 
 void NDL_OpenAudio(int freq, int channels, int samples) {

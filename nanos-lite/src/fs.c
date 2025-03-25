@@ -1,20 +1,5 @@
 #include <fs.h>
 
-typedef size_t (*ReadFn) (void *buf, size_t offset, size_t len);
-typedef size_t (*WriteFn) (const void *buf, size_t offset, size_t len);
-
-typedef struct {
-  char *name;
-  size_t size;
-  size_t disk_offset;
-  ReadFn read;
-  WriteFn write;
-  /* indicates the offset of the byte that is going to be read or written */
-  size_t open_offset;
-} Finfo;
-
-enum {FD_STDIN, FD_STDOUT, FD_STDERR, FD_SERIAL, FD_EVENTS, FD_FB, FD_DISPINFO};
-
 size_t invalid_read(void *buf, size_t offset, size_t len) {
   panic("should not reach here");
   return 0;
@@ -48,7 +33,27 @@ static Finfo file_table[] __attribute__((used)) = {
 void init_fs() {
   // TODO: initialize the size of /dev/fb
   /* initialize the size of /dev/fb */
-
+  int screen_w = 0, screen_h = 0;
+  char buf[64] = {0}; // 64 should be enough
+  fs_read(FD_DISPINFO, buf, sizeof(buf));
+  fs_close(FD_DISPINFO);
+  /* 5 lines should be enough */
+  char *lines[5];
+  int num_lines = 0;
+  char *line = strtok(buf, "\n");
+  while (line != NULL && num_lines < 5) {
+    lines[num_lines++] = line;
+    line = strtok(NULL, "\n");
+  }
+  for (int i = 0; i < num_lines; i++) {
+    char *key = strtok(lines[i], " :");
+    char *value = strtok(NULL, " :");
+    if (key && value) {
+      if (strcmp(key, "WIDTH") == 0)          screen_w = atoi(value);
+      else if (strcmp(key, "HEIGHT") == 0)    screen_h = atoi(value);
+    }
+  }
+  file_table[FD_FB].size = screen_w * screen_h * 4; // 4 bytes represent a pixel
 
 }
 
@@ -116,6 +121,10 @@ size_t fs_write(int fd, const void *buf, size_t len) {
       /* for stdout and stderr */
       case FD_STDOUT: case FD_STDERR: case FD_SERIAL: {
         written = file_table[fd].write(buf, 0, len);
+        return written;
+      }
+      case FD_FB: {
+        written = file_table[FD_FB].write(buf, file_table[FD_FB].open_offset, len);
         return written;
       }
     }
