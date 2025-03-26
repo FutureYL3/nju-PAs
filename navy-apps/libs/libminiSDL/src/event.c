@@ -42,9 +42,6 @@ int SDL_WaitEvent(SDL_Event *event) {
       buf[2] = '\0';
       char *key_op = buf;
       char *key_name = buf + 3;
-      printf("%s\n", key_op);
-      printf("%s\n", key_name);
-
 
       if (strcmp(key_op, "kd") == 0) {
         event->type = SDL_KEYDOWN;
@@ -53,9 +50,9 @@ int SDL_WaitEvent(SDL_Event *event) {
         event->type = SDL_KEYUP;
       }
 
-      printf("%d\n", event->type);
-
+      /* TODO: problem is here */
       for (int i = 0; i < NR_KEYS; ++ i) {
+        printf("now comparing %s and %s\n", key_name, keyname[i]);
         if (strcmp(key_name, keyname[i]) == 0)  {
           printf("%d\n", i);
           event->key.keysym.sym = i;
