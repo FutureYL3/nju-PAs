@@ -57,11 +57,8 @@ int SDL_WaitEvent(SDL_Event *event) {
         event->type = SDL_KEYUP;
       }
 
-      /* TODO: problem is here */
       for (int i = 0; i < NR_KEYS; ++ i) {
-        printf("now comparing %s and %s\n", key_name, keyname[i]);
         if (strcmp(key_name, keyname[i]) == 0)  {
-          printf("%d\n", i);
           event->key.keysym.sym = i;
           break;
         }

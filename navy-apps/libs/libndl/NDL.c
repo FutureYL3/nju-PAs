@@ -69,7 +69,6 @@ int fd = -1;
 /* this function's target is canvas, not screen */
 void NDL_DrawRect(uint32_t *pixels, int x, int y, int w, int h) {
   if (!pixels || w <= 0 || h <= 0)  return;
-  
   // check for border
   if (x < 0 || y < 0 || x + w > canvas_w || y + h > canvas_h) {
     return;
@@ -86,7 +85,6 @@ void NDL_DrawRect(uint32_t *pixels, int x, int y, int w, int h) {
     p += w;
     lseek(fd, offset, SEEK_SET);
   }
-  
 }
 
 void NDL_OpenAudio(int freq, int channels, int samples) {
