@@ -11,9 +11,38 @@
 /* move the function out of condition compilation block if implemented */
 #if not_implemented
 
-void SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color) {
-}
 #endif
+
+void SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color) {
+  /* if dstrect is NULL, update the whole canvas */
+  if (dstrect == NULL) {
+    if (dst->format->BitsPerPixel == 32) {
+      uint32_t *p = (uint32_t *) dst->pixels;
+      int size = dst->w * dst->h;
+      for (int i = 0; i < size; ++ i)  p[i] = color;
+    }
+    else if (dst->format->BitsPerPixel == 8) {
+
+    }
+    SDL_UpdateRect(dst, 0, 0, dst->w, dst->h);
+    return;
+  }
+
+  /* else, update the rect area */
+  if (dst->format->BitsPerPixel == 32) {
+    uint32_t *p = (uint32_t *) dst->pixels + dstrect->y * (dst->pitch / 4) + dstrect->x;
+    for (int i = 0; i < dstrect->h; ++ i) {
+      for (int j = 0; j < dstrect->w; ++ j) {
+        p[j] = color;
+      }
+      p += dst->pitch / 4;
+    }
+  }
+  else if (dst->format->BitsPerPixel == 8) {
+
+  }
+  SDL_UpdateRect(dst, dstrect->x, dstrect->y, dstrect->w, dstrect->h);
+}
 
 void SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect) {
   assert(dst && src);
@@ -35,8 +64,23 @@ void SDL_UpdateRect(SDL_Surface *s, int x, int y, int w, int h) {
   /* check for pixel representation mode */
   if (s->format->BitsPerPixel == 32) {
     /* 32 bits color mode */
-    uint32_t *pixels = (uint32_t *)s->pixels + y * (s->pitch / 4) + x;
-    NDL_DrawRect(pixels, x, y, w, h);
+    // Allocate a temporary buffer for the rectangle's pixels
+    uint32_t *rect_pixels = malloc(w * h * sizeof(uint32_t));
+    if (rect_pixels == NULL) {
+      fprintf(stderr, "Failed to allocate memory for rectangle pixels\n");
+      return;
+    }
+    // Copy pixels from surface to the temporary buffer
+    uint32_t *src = (uint32_t *)s->pixels + y * (s->pitch / 4) + x;
+    uint32_t *dst = rect_pixels;
+    for (int i = 0; i < h; i++) {
+      memcpy(dst, src, w * sizeof(uint32_t));
+      src += s->pitch / 4;  // Move to next line in source
+      dst += w;             // Move to next line in destination
+    }
+    // Draw the rectangle using the temporary buffer
+    NDL_DrawRect(rect_pixels, x, y, w, h);
+    free(rect_pixels);
   } 
   else if (s->format->BitsPerPixel == 8) {
     /* palette mode */
