@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 
-#define not_implemented 0
+#define not_implemented 1
 
 /* move the function out of condition compilation block if implemented */
 #if not_implemented
