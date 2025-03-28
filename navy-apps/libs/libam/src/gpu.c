@@ -9,7 +9,8 @@
 static int w, h;
 
 #define N 4
-void __am_gpu_config(AM_GPU_CONFIG_T *cfg) {
+
+void __am_gpu_init() {
   int fd = open("/proc/dispinfo", 0, 0); // we do not use flags and mode
   char buf[64] = {0}; // 64 should be enough
   read(fd, buf, sizeof(buf));
@@ -30,7 +31,13 @@ void __am_gpu_config(AM_GPU_CONFIG_T *cfg) {
       else if (strcmp(key, "HEIGHT") == 0)    h = atoi(value);
     }
   }
+  close(fd);
+  
+  NDL_OpenCanvas(&w, &h);
+}
 
+
+void __am_gpu_config(AM_GPU_CONFIG_T *cfg) {
   *cfg = (AM_GPU_CONFIG_T) {
     .present = true, .has_accel = false,
     .width = w, .height = h,

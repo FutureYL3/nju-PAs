@@ -1,6 +1,10 @@
 #include <am.h>
 #include <NDL.h>
 
+__am_timer_init() {
+  
+}
+
 void __am_timer_rtc(AM_TIMER_RTC_T *rtc) {
   rtc->second = 0;
   rtc->minute = 0;

@@ -1,5 +1,9 @@
 #include <am.h>
 
+__am_audio_init() {
+  
+}
+
 void __am_audio_config(AM_AUDIO_CONFIG_T *cfg) {
   
 }
