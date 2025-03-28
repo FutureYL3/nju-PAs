@@ -47,6 +47,59 @@ void SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color) {
 void SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect) {
   assert(dst && src);
   assert(dst->format->BitsPerPixel == src->format->BitsPerPixel);
+
+  // if srcrect is NULL，copy the entire src surface
+  SDL_Rect src_rect;
+  if (srcrect == NULL) {
+    src_rect.x = 0;
+    src_rect.y = 0;
+    src_rect.w = src->w;
+    src_rect.h = src->h;
+    srcrect = &src_rect;
+  }
+
+  // if dstrect is NULL，start copy to (0,0)
+  SDL_Rect dst_rect;
+  if (dstrect == NULL) {
+    dst_rect.x = 0;
+    dst_rect.y = 0;
+    dstrect = &dst_rect;
+  }
+
+  // check for border
+  if (srcrect->x < 0 || srcrect->y < 0 || 
+      srcrect->x + srcrect->w > src->w || 
+      srcrect->y + srcrect->h > src->h ||
+      dstrect->x < 0 || dstrect->y < 0 ||
+      dstrect->x + srcrect->w > dst->w || 
+      dstrect->y + srcrect->h > dst->h) {
+    return;
+  }
+
+  // copy according to pixel representation
+  if (src->format->BitsPerPixel == 32) {
+    uint32_t *src_pixels = (uint32_t *)src->pixels + srcrect->y * (src->pitch / 4) + srcrect->x;
+    uint32_t *dst_pixels = (uint32_t *)dst->pixels + dstrect->y * (dst->pitch / 4) + dstrect->x;
+    
+    for (int i = 0; i < srcrect->h; i++) {
+      memcpy(dst_pixels, src_pixels, srcrect->w * sizeof(uint32_t));
+      src_pixels += src->pitch / 4;
+      dst_pixels += dst->pitch / 4;
+    }
+  }
+  else if (src->format->BitsPerPixel == 8) {
+    uint8_t *src_pixels = (uint8_t *)src->pixels + srcrect->y * src->pitch + srcrect->x;
+    uint8_t *dst_pixels = (uint8_t *)dst->pixels + dstrect->y * dst->pitch + dstrect->x;
+    
+    for (int i = 0; i < srcrect->h; i++) {
+      memcpy(dst_pixels, src_pixels, srcrect->w);
+      src_pixels += src->pitch;
+      dst_pixels += dst->pitch;
+    }
+  }
+
+  // update
+  SDL_UpdateRect(dst, dstrect->x, dstrect->y, srcrect->w, srcrect->h);
 }
 
 /* 
