@@ -22,7 +22,23 @@ void SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color) {
       for (int i = 0; i < size; ++ i)  p[i] = color;
     }
     else if (dst->format->BitsPerPixel == 8) {
-
+      uint8_t *p = (uint8_t *)dst->pixels;
+      int size = dst->w * dst->h;
+      
+      uint8_t r = (color >> 16) & 0xff;
+      uint8_t g = (color >> 8) & 0xff;
+      uint8_t b = color & 0xff;
+      uint8_t idx = 0;
+      
+      for (int i = 0; i < dst->format->palette->ncolors; i++) {
+        SDL_Color *pal_color = &dst->format->palette->colors[i];
+        if (pal_color->r == r && pal_color->g == g && pal_color->b == b) {
+          idx = i;
+          break;
+        }
+      }
+      
+      for (int i = 0; i < size; ++i)  p[i] = idx;
     }
     SDL_UpdateRect(dst, 0, 0, dst->w, dst->h);
     return;
@@ -39,7 +55,27 @@ void SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color) {
     }
   }
   else if (dst->format->BitsPerPixel == 8) {
-
+    uint8_t *p = (uint8_t *)dst->pixels + dstrect->y * dst->pitch + dstrect->x;
+   
+    uint8_t r = (color >> 16) & 0xff;
+    uint8_t g = (color >> 8) & 0xff;
+    uint8_t b = color & 0xff;
+    uint8_t idx = 0;
+    
+    for (int i = 0; i < dst->format->palette->ncolors; i++) {
+      SDL_Color *pal_color = &dst->format->palette->colors[i];
+      if (pal_color->r == r && pal_color->g == g && pal_color->b == b) {
+        idx = i;
+        break;
+      }
+    }
+    
+    for (int i = 0; i < dstrect->h; ++i) {
+      for (int j = 0; j < dstrect->w; ++j) {
+        p[j] = idx;
+      }
+      p += dst->pitch;
+    }
   }
   SDL_UpdateRect(dst, dstrect->x, dstrect->y, dstrect->w, dstrect->h);
 }
