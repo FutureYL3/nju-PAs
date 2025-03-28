@@ -12,13 +12,13 @@ static int screen_w = 0, screen_h = 0;
 static int canvas_w = 0, canvas_h = 0;
 
 uint32_t NDL_GetTicks() {
-  struct timeval tz = {};
-  int ret = gettimeofday(&tz, NULL);
+  struct timeval tv = {};
+  int ret = gettimeofday(&tv, NULL);
   if (ret < 0) {
     return -1;
   }
   // ms as unit
-  return tz.tv_sec * 1000 + tz.tv_usec / 1000;
+  return tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }
 
 int NDL_PollEvent(char *buf, int len) {
