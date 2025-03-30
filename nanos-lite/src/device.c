@@ -79,7 +79,7 @@ size_t fb_write(const void *buf, size_t offset, size_t len) {
   int h = len & 0xffff;
   int written_bytes = w * h * 4;
 
-  printf("in fb_write, w is %d and h = %d\n", w, h);
+  // printf("in fb_write, w is %d and h = %d\n", w, h);
 
   /* updated: remove this feature */
   // size_t fb_size = screen_w * screen_h * 4;

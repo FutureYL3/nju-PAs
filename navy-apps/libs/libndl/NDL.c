@@ -80,8 +80,8 @@ void NDL_DrawRect(uint32_t *pixels, int x, int y, int w, int h) {
   lseek(fd, offset, SEEK_SET);
   /* we use upper 16 bits for w and lower 16 bits for h */
   uint32_t len = (uint16_t) h + (w << 16);
-  printf("in NDL_DrawRect, w is %d and h = %d\n", w, h);
-  printf("in NDL_DrawRect, len is %d\n", len);
+  // printf("in NDL_DrawRect, w is %d and h = %d\n", w, h);
+  // printf("in NDL_DrawRect, len is %d\n", len);
   // for (int i = 0; i < h; ++ i) {
   //   write(fd, (void *) p, w * 4);
   //   offset += screen_w * 4;

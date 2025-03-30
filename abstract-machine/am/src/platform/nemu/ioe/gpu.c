@@ -24,7 +24,7 @@ void __am_gpu_fbdraw(AM_GPU_FBDRAW_T *ctl) {
 	int w = (vga_size >> 16);
 	uint32_t *pixels_ptr = (uint32_t *) ctl->pixels;
 	uint32_t offset = (w * ctl->y + ctl->x) * 4;
-	printf("in __am_gpu_fbdraw, w is %d and h = %d\n", ctl->w, ctl->h);
+	// printf("in __am_gpu_fbdraw, w is %d and h = %d\n", ctl->w, ctl->h);
 	for (int i = 0; i < ctl->h; ++ i) {
 		for (int j = 0; j < ctl->w; ++ j) {
 			uint32_t pos = FB_ADDR + offset + 4 * j;
