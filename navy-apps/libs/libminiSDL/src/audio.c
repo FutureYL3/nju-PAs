@@ -1,6 +1,7 @@
 #include <NDL.h>
 #include <SDL.h>
 #include <stdlib.h>
+#include "/home/yl/ics2022/navy-apps/libs/libfixedptc/include/fixedptc.h"
 
 #define not_implemented 0
 
@@ -67,11 +68,13 @@ void SDL_PauseAudio(int pause_on) {
   is_paused = pause_on;
 }
 
-uint32_t interval_ms = -1;
+fixedpt interval_ms = -1;
 uint32_t last_ms = -1;
 void CallbackHelper() {
   /* if paused, */
-  if (interval_ms == -1)  interval_ms = samples / freq * 1000;
+  fixedpt fsamples = fixedpt_fromint(samples);
+  fixedpt ffreq = fixedpt_fromint(freq);
+  if (interval_ms == -1)  interval_ms = fixedpt_mul(fixedpt_div(fsamples, ffreq), fixedpt_fromint(1000));
   if (last_ms == -1)      last_ms = NDL_GetTicks();
   /* when paused, we don't retrive data by callback */
   if (is_paused)  return;

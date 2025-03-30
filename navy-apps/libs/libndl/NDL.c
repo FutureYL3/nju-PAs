@@ -103,7 +103,7 @@ int sb_fd = -1;
 int NDL_PlayAudio(void *buf, int len) {
   if (sb_fd == -1)  sb_fd = open("/dev/sb", 0, 0);
 
-  return write(fd, buf, len);
+  return write(sb_fd, buf, len);
 }
 
 int sbsize_fd = -1;
