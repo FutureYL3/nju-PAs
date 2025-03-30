@@ -29,7 +29,7 @@ void SDL_UnlockAudio() {
 uint8_t *buf;
 void (*user_callback)(void *userdata, uint8_t *stream, int len);
 
-int is_paused; // 0 for not paused and 1 for paused
+int is_paused = 1; // 0 for not paused and 1 for paused
 /* audio config */
 int freq;
 int channels;
@@ -61,6 +61,7 @@ int SDL_OpenAudio(SDL_AudioSpec *desired, SDL_AudioSpec *obtained) {
 
 void SDL_CloseAudio() {
   NDL_CloseAudio();
+  is_paused = 1;
 }
 
 /* pause_on: 0 for not paused, 1 for paused */
