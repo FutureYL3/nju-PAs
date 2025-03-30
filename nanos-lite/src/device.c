@@ -67,7 +67,7 @@ size_t dispinfo_read(void *buf, size_t offset, size_t len) {
   need this feature, it can be removed to improve performance.
 */
 /*
-  2025.3.30 update: sync at last write
+  2025.3.30 update: sync at last write and remove the feature
 */
 size_t fb_write(const void *buf, size_t offset, size_t len) {
   int x = (offset / 4) % screen_w, y = (offset / 4) / screen_w;
@@ -78,38 +78,53 @@ size_t fb_write(const void *buf, size_t offset, size_t len) {
     len = fb_size - offset;
   }
   uint32_t *p = (uint32_t *) buf;
-  size_t original_len = len;
-  size_t pixels_to_write = len / 4;
 
-  while (x + pixels_to_write > screen_w) {
-    size_t write_len = screen_w - x;
-    AM_GPU_FBDRAW_T ctl = {
-      .x = x, 
-      .y = y, 
-      .pixels = (void *) p,
-      .h = 1,
-      .w = write_len,
-      .sync = false // sync when finish writing
-    };
-    /* we don't use io_write for readability */
-    ioe_write(AM_GPU_FBDRAW, &ctl);
-    /* update for potential next line write */
-    pixels_to_write -= write_len;
-    x = 0; y++;
-    p += write_len;
-  }
-  /* when reach here, left bytes will not take up a whole screen width */
+  int w = len >> 16;
+  int h = len & 0xffff;
+
   AM_GPU_FBDRAW_T ctl = {
     .x = x, 
-    .y = y, 
+    .y = y,
     .pixels = (void *) p,
-    .h = 1,
-    .w = pixels_to_write,
-    .sync = true
+    .h = h,
+    .w = w,
+    .sync = true // sync when finish writing
   };
+
+  /* we don't use io_write for readability */
   ioe_write(AM_GPU_FBDRAW, &ctl);
 
-  return original_len;
+  return w * h * 4;
+
+  // while (x + pixels_to_write > screen_w) {
+  //   size_t write_len = screen_w - x;
+  //   AM_GPU_FBDRAW_T ctl = {
+  //     .x = x, 
+  //     .y = y, 
+  //     .pixels = (void *) p,
+  //     .h = 1,
+  //     .w = write_len,
+  //     .sync = false // sync when finish writing
+  //   };
+  //   /* we don't use io_write for readability */
+  //   ioe_write(AM_GPU_FBDRAW, &ctl);
+  //   /* update for potential next line write */
+  //   pixels_to_write -= write_len;
+  //   x = 0; y++;
+  //   p += write_len;
+  // }
+  // /* when reach here, left bytes will not take up a whole screen width */
+  // AM_GPU_FBDRAW_T ctl = {
+  //   .x = x, 
+  //   .y = y, 
+  //   .pixels = (void *) p,
+  //   .h = 1,
+  //   .w = pixels_to_write,
+  //   .sync = true
+  // };
+  // ioe_write(AM_GPU_FBDRAW, &ctl);
+
+  // return original_len;
 }
 
 /* the arguments are not used */
