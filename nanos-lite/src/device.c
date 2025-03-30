@@ -129,8 +129,10 @@ size_t sb_write(const void *buf, size_t offset, size_t len) {
 
 
 size_t sbctl_write(const void *buf, size_t offset, size_t len) {
-  assert(len == 3);
+  
+  // assert(len == 3);
   int *p = (int *) buf;
+  printf("Get audio config, len = %d, freq = %d, channels = %d and samples = %d\n", len, p[0], p[1], p[2]);
   /* the order is: freq, channels, samples */
   io_write(AM_AUDIO_CTRL, p[0], p[1], p[2]);
   return len;
