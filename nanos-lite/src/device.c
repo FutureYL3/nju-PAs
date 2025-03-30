@@ -66,6 +66,9 @@ size_t dispinfo_read(void *buf, size_t offset, size_t len) {
   This function can handle cross-line write, if upper interface doesn't 
   need this feature, it can be removed to improve performance.
 */
+/*
+  2025.3.30 update: sync at last write
+*/
 size_t fb_write(const void *buf, size_t offset, size_t len) {
   int x = (offset / 4) % screen_w, y = (offset / 4) / screen_w;
 
@@ -86,7 +89,7 @@ size_t fb_write(const void *buf, size_t offset, size_t len) {
       .pixels = (void *) p,
       .h = 1,
       .w = write_len,
-      .sync = true
+      .sync = false // sync when finish writing
     };
     /* we don't use io_write for readability */
     ioe_write(AM_GPU_FBDRAW, &ctl);
@@ -130,9 +133,9 @@ size_t sb_write(const void *buf, size_t offset, size_t len) {
 
 size_t sbctl_write(const void *buf, size_t offset, size_t len) {
   
-  // assert(len == 3);
+  assert(len == 12);  // for 3 int(4 bytes)
   int *p = (int *) buf;
-  printf("Get audio config, len = %d, freq = %d, channels = %d and samples = %d\n", len, p[0], p[1], p[2]);
+  // printf("Get audio config, len = %d, freq = %d, channels = %d and samples = %d\n", len, p[0], p[1], p[2]);
   /* the order is: freq, channels, samples */
   io_write(AM_AUDIO_CTRL, p[0], p[1], p[2]);
   return len;
