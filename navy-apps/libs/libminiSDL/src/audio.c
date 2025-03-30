@@ -71,6 +71,7 @@ void SDL_PauseAudio(int pause_on) {
 fixedpt interval_ms = -1;
 uint32_t last_ms = -1;
 void CallbackHelper() {
+  printf("Callback helper called\n");
   /* if paused, */
   fixedpt fsamples = fixedpt_fromint(samples);
   fixedpt ffreq = fixedpt_fromint(freq);
