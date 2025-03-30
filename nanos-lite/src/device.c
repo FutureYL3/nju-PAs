@@ -62,6 +62,7 @@ size_t dispinfo_read(void *buf, size_t offset, size_t len) {
   int ret = snprintf(p, len, "WIDTH:%d\nHEIGHT:%d", w, h);
   return ret;
 }
+
 /* 
   This function can handle cross-line write, if upper interface doesn't 
   need this feature, it can be removed to improve performance.
@@ -72,15 +73,18 @@ size_t dispinfo_read(void *buf, size_t offset, size_t len) {
 size_t fb_write(const void *buf, size_t offset, size_t len) {
   int x = (offset / 4) % screen_w, y = (offset / 4) / screen_w;
 
-  size_t fb_size = screen_w * screen_h * 4;
-  if (offset + len > fb_size) {
-    Log("offset plus len exceeds frame buffer size in fb_write, just write to the remain space");
-    len = fb_size - offset;
-  }
   uint32_t *p = (uint32_t *) buf;
 
   int w = len >> 16;
   int h = len & 0xffff;
+  int written_bytes = w * h * 4;
+
+  /* updated: remove this feature */
+  // size_t fb_size = screen_w * screen_h * 4;
+  // if (offset + written_bytes > fb_size) {
+  //   Log("offset plus len exceeds frame buffer size in fb_write, just write to the remain space");
+  //   len = fb_size - offset;
+  // }
 
   AM_GPU_FBDRAW_T ctl = {
     .x = x, 
@@ -94,7 +98,7 @@ size_t fb_write(const void *buf, size_t offset, size_t len) {
   /* we don't use io_write for readability */
   ioe_write(AM_GPU_FBDRAW, &ctl);
 
-  return w * h * 4;
+  return written_bytes;
 
   // while (x + pixels_to_write > screen_w) {
   //   size_t write_len = screen_w - x;
