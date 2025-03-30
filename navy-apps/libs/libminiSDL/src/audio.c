@@ -88,6 +88,7 @@ void CallbackHelper() {
   if (avai_space > sizeof(buf)) {
     user_callback(NULL, buf, sizeof(buf));
     NDL_PlayAudio(buf, sizeof(buf));
+    printf("NDL_PlayAudio\n");
   }
   
   last_ms = current_ms;
