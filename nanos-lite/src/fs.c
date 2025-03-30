@@ -1,4 +1,5 @@
 #include <fs.h>
+#include <common.h>
 
 size_t invalid_read(void *buf, size_t offset, size_t len) {
   panic("should not reach here");
@@ -14,6 +15,9 @@ size_t serial_write(const void *buf, size_t offset, size_t len);
 size_t events_read(void *buf, size_t offset, size_t len);
 size_t dispinfo_read(void *buf, size_t offset, size_t len);
 size_t fb_write(const void *buf, size_t offset, size_t len);
+size_t sb_write(const void *buf, size_t offset, size_t len);
+size_t sbctl_read(void *buf, size_t offset, size_t len);
+size_t sbctl_write(const void *buf, size_t offset, size_t len);
 
 /* This is the information about all files in disk. */
 static Finfo file_table[] __attribute__((used)) = {
@@ -25,6 +29,9 @@ static Finfo file_table[] __attribute__((used)) = {
   /* file size of frame buffer should be initialized */
   [FD_FB] = {"/dev/fb", 0, 0, invalid_read, fb_write, 0},
   [FD_DISPINFO] = {"/proc/dispinfo", 0, 0, dispinfo_read, invalid_write, 0},
+  /* file size of sound buffer should be initialized */
+  [FD_SB] = {"/dev/sb", 0, 0, invalid_read, sb_write, 0},
+  [FD_SBCTL] = {"/dev/sbctl", 0, 0, sbctl_read, sbctl_write, 0},
 #include "files.h"
 };
 
@@ -32,28 +39,38 @@ static Finfo file_table[] __attribute__((used)) = {
 
 void init_fs() {
   // TODO: initialize the size of /dev/fb
-  /* initialize the size of /dev/fb */
+  
   int screen_w = 0, screen_h = 0;
-  char buf[64] = {0}; // 64 should be enough
-  fs_read(FD_DISPINFO, buf, sizeof(buf));
-  fs_close(FD_DISPINFO);
-  /* 5 lines should be enough */
-  char *lines[5];
-  int num_lines = 0;
-  char *line = strtok(buf, "\n");
-  while (line != NULL && num_lines < 5) {
-    lines[num_lines++] = line;
-    line = strtok(NULL, "\n");
-  }
-  for (int i = 0; i < num_lines; i++) {
-    char *key = strtok(lines[i], " :");
-    char *value = strtok(NULL, " :");
-    if (key && value) {
-      if (strcmp(key, "WIDTH") == 0)          screen_w = atoi(value);
-      else if (strcmp(key, "HEIGHT") == 0)    screen_h = atoi(value);
-    }
-  }
+  // char buf[64] = {0}; // 64 should be enough
+  // fs_read(FD_DISPINFO, buf, sizeof(buf));
+  // fs_close(FD_DISPINFO);
+  // /* 5 lines should be enough */
+  // char *lines[5];
+  // int num_lines = 0;
+  // char *line = strtok(buf, "\n");
+  // while (line != NULL && num_lines < 5) {
+  //   lines[num_lines++] = line;
+  //   line = strtok(NULL, "\n");
+  // }
+  // for (int i = 0; i < num_lines; i++) {
+  //   char *key = strtok(lines[i], " :");
+  //   char *value = strtok(NULL, " :");
+  //   if (key && value) {
+  //     if (strcmp(key, "WIDTH") == 0)          screen_w = atoi(value);
+  //     else if (strcmp(key, "HEIGHT") == 0)    screen_h = atoi(value);
+  //   }
+  // }
+  
+  /* initialize the size of /dev/fb */
+  AM_GPU_CONFIG_T gpu_cfg = io_read(AM_GPU_CONFIG);
+  screen_w = gpu_cfg.width;
+  screen_h = gpu_cfg.height;
   file_table[FD_FB].size = screen_w * screen_h * 4; // 4 bytes represent a pixel
+
+
+  /* initialize the size of /dev/sb */
+  AM_AUDIO_CONFIG_T audio_cfg = io_read(AM_AUDIO_CONFIG);
+  file_table[FD_SB].size = audio_cfg.bufsize;
 
 }
 
@@ -91,6 +108,10 @@ size_t fs_read(int fd, void *buf, size_t len) {
         size_t ret = file_table[FD_DISPINFO].read(buf, 0, len);
         return ret;
       }
+      case FD_SBCTL: {
+        /* treat the returned value of FD_SBCTL read as result, don't use any parameters */
+        return file_table[FD_SBCTL].read(NULL, 0, 0);
+      }
     }
 
     /* call function to trigger panic */
@@ -125,6 +146,14 @@ size_t fs_write(int fd, const void *buf, size_t len) {
       }
       case FD_FB: {
         written = file_table[FD_FB].write(buf, file_table[FD_FB].open_offset, len);
+        return written;
+      }
+      case FD_SB: {
+        written = file_table[FD_SB].write(buf, 0, len);
+        return written;
+      }
+      case FD_SBCTL: {
+        written = file_table[FD_SBCTL].write(buf, 0, len);
         return written;
       }
     }

@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 
-#define not_implemented 1
+#define not_implemented 0
 
 /* move the function out of condition compilation block if implemented */
 #if not_implemented
@@ -17,9 +17,16 @@ int SDL_RemoveTimer(SDL_TimerID id) {
 
 
 
-void SDL_Delay(uint32_t ms) {
-}
+
 #endif
+
+void SDL_Delay(uint32_t ms) {
+  uint32_t start = NDL_GetTicks();
+  uint32_t now;
+  while (NDL_GetTicks() - start < ms) {
+    // busy waiting
+  }
+}
 
 uint32_t SDL_GetTicks() {
   return NDL_GetTicks();

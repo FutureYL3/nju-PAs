@@ -20,7 +20,7 @@ typedef struct {
   size_t open_offset;
 } Finfo;
 
-enum {FD_STDIN, FD_STDOUT, FD_STDERR, FD_SERIAL, FD_EVENTS, FD_FB, FD_DISPINFO};
+enum {FD_STDIN, FD_STDOUT, FD_STDERR, FD_SERIAL, FD_EVENTS, FD_FB, FD_DISPINFO, FD_SB, FD_SBCTL};
 
 int fs_open(const char *pathname, int flags, int mode);
 size_t fs_read(int fd, void *buf, size_t len);

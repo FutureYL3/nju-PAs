@@ -16,6 +16,7 @@ static const char *keyname[256] __attribute__((used)) = {
 };
 
 int screen_w = 0, screen_h = 0;
+int sb_size = 0;
 
 size_t serial_write(const void *buf, size_t offset, size_t len) {
   char *p = (char *) buf;
@@ -108,27 +109,62 @@ size_t fb_write(const void *buf, size_t offset, size_t len) {
   return original_len;
 }
 
+/* the arguments are not used */
+size_t sbctl_read(void *buf, size_t offset, size_t len) {
+  AM_AUDIO_STATUS_T stat = io_read(AM_AUDIO_STATUS);
+  return sb_size - stat.count;
+}
+
+size_t sb_write(const void *buf, size_t offset, size_t len) {
+  int avai_space = sbctl_read(NULL, 0, 0);
+  while (avai_space < len) {
+    /* wait until has enough space */
+    avai_space = sbctl_read(NULL, 0, 0);
+  }
+
+  Area sb_buf = {.start = (void *) buf, .end = (void *) ((char *) buf + len)};
+  io_write(AM_AUDIO_PLAY, sb_buf);
+  return len;
+}
+
+
+size_t sbctl_write(const void *buf, size_t offset, size_t len) {
+  assert(len == 3);
+  int *p = (int *) buf;
+  /* the order is: freq, channels, samples */
+  io_write(AM_AUDIO_CTRL, p[0], p[1], p[2]);
+  return len;
+}
+
 void init_device() {
   Log("Initializing devices...");
   ioe_init();
-  /* get screen height and width */
-  char buf[64] = {0}; // 64 should be enough
-  fs_read(FD_DISPINFO, buf, sizeof(buf));
-  fs_close(FD_DISPINFO);
-  /* 5 lines should be enough */
-  char *lines[5];
-  int num_lines = 0;
-  char *line = strtok(buf, "\n");
-  while (line != NULL && num_lines < 5) {
-    lines[num_lines++] = line;
-    line = strtok(NULL, "\n");
-  }
-  for (int i = 0; i < num_lines; i++) {
-    char *key = strtok(lines[i], " :");
-    char *value = strtok(NULL, " :");
-    if (key && value) {
-      if (strcmp(key, "WIDTH") == 0)          screen_w = atoi(value);
-      else if (strcmp(key, "HEIGHT") == 0)    screen_h = atoi(value);
-    }
-  }
+  // /* get screen height and width */
+  // char buf[64] = {0}; // 64 should be enough
+  // fs_read(FD_DISPINFO, buf, sizeof(buf));
+  // fs_close(FD_DISPINFO);
+  // /* 5 lines should be enough */
+  // char *lines[5];
+  // int num_lines = 0;
+  // char *line = strtok(buf, "\n");
+  // while (line != NULL && num_lines < 5) {
+  //   lines[num_lines++] = line;
+  //   line = strtok(NULL, "\n");
+  // }
+  // for (int i = 0; i < num_lines; i++) {
+  //   char *key = strtok(lines[i], " :");
+  //   char *value = strtok(NULL, " :");
+  //   if (key && value) {
+  //     if (strcmp(key, "WIDTH") == 0)          screen_w = atoi(value);
+  //     else if (strcmp(key, "HEIGHT") == 0)    screen_h = atoi(value);
+  //   }
+  // }
+  AM_GPU_CONFIG_T gpu_cfg = io_read(AM_GPU_CONFIG);
+  screen_w = gpu_cfg.width;
+  screen_h = gpu_cfg.height;
+
+
+  /* get sound buffer size */
+  AM_AUDIO_CONFIG_T audio_cfg = io_read(AM_AUDIO_CONFIG);
+  sb_size = audio_cfg.bufsize;
 }
