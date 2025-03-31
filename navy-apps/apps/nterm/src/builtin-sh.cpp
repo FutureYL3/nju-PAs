@@ -46,7 +46,10 @@ static void sh_handle_cmd(const char *cmd) {
   // 删除换行符
   char *pp = p;
   while (pp != NULL) {
-    if (*pp == '\n')  *pp = '\0';
+    if (*pp == '\n') {
+      *pp = '\0';
+      ++pp;
+    }
   }
   
   if (strcmp(command, "echo") == 0) {
