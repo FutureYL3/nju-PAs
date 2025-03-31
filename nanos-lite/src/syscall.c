@@ -80,9 +80,10 @@ void do_syscall(Context *c) {
       const char *path = *env;
       while (*path != '=')  ++path;
       ++path;
-      memcpy(absolut_path, path, sizeof(path));
+      strcpy(absolut_path, path);
       strcat(absolut_path, "/"); strcat(absolut_path, (const char *) a[1]);
       naive_uload(NULL, absolut_path);
+      free(absolut_path);
       break;
     }
     default: panic("Unhandled syscall ID = %d", a[0]);
