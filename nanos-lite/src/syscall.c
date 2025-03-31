@@ -74,7 +74,7 @@ void do_syscall(Context *c) {
     }
     case SYS_execve: {
       /* if naive_uload failed, it will panic, so we don't check its return value to determine whether SYS_execve should return -1 */
-      char absolut_path[50] = {0};
+      char *absolut_path = (char *) malloc(50);
       const char **env = (const char **) a[3];
       while (strcmp(*env, "PATH") != 0)  ++env;
       const char *path = *env;
