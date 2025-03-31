@@ -32,17 +32,21 @@ static void sh_handle_cmd(const char *cmd) {
   
   char *p = cmd_copy;
   char *command = NULL;
-  bool in_quotes = false;
-  bool first_token = true;
   bool first_arg = true;
   
   // 跳过前导空格
   while (*p && isspace(*p))  p++;
+
   
   // 解析命令名
   command = p;
   while (*p && !isspace(*p))  p++;
   if (*p)  *p++ = '\0';
+
+  // 删除末尾换行符
+  char *pp = p;
+  while (*pp && *pp != '\n')  pp++;
+  *pp = '\0';
   
   if (strcmp(command, "echo") == 0) {
     // 处理echo命令的参数
