@@ -2,6 +2,9 @@
 #include <stdarg.h>
 #include <unistd.h>
 #include <SDL.h>
+#include <stdlib.h>
+
+extern char **environ;
 
 char handle_key(SDL_Event *ev);
 
@@ -27,6 +30,7 @@ static inline bool isspace(char c) {
 }
 
 static void sh_handle_cmd(const char *cmd) {
+  setenv("PATH", "/bin", 0);
   char *cmd_copy = strdup(cmd);
   if (!cmd_copy) return;
   
@@ -89,7 +93,7 @@ static void sh_handle_cmd(const char *cmd) {
   }
   else { // 其他命令，直接作为参数传给SYS_execve
     sh_printf("now executing program %s", command);
-    execve(command, NULL, NULL);
+    execve(command, NULL, environ);
   }
   
   free(cmd_copy);
