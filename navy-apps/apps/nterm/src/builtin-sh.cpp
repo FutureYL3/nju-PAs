@@ -43,10 +43,11 @@ static void sh_handle_cmd(const char *cmd) {
   while (*p && !isspace(*p))  p++;
   if (*p)  *p++ = '\0';
 
-  // 删除末尾换行符
+  // 删除换行符
   char *pp = p;
-  while (*pp && *pp != '\n')  pp++;
-  *pp = '\0';
+  while (pp != NULL) {
+    if (*pp == '\n')  *pp = '\0';
+  }
   
   if (strcmp(command, "echo") == 0) {
     // 处理echo命令的参数
@@ -84,6 +85,7 @@ static void sh_handle_cmd(const char *cmd) {
     sh_printf("\n"); // 只在所有参数后添加一个换行
   }
   else { // 其他命令，直接作为参数传给SYS_execve
+    sh_printf("now executing program %s", command);
     execve(command, NULL, NULL);
   }
   
