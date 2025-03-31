@@ -74,7 +74,15 @@ void do_syscall(Context *c) {
     }
     case SYS_execve: {
       /* if naive_uload failed, it will panic, so we don't check its return value to determine whether SYS_execve should return -1 */
-      naive_uload(NULL, (const char *) a[1]);
+      char absolut_path[50] = {0};
+      const char **env = (const char **) a[3];
+      while (strcmp(*env, "PATH") != 0)  ++env;
+      const char *path = *env;
+      while (*path != '=')  ++path;
+      ++path;
+      memcpy(absolut_path, path, sizeof(path));
+      strcat(absolut_path, "/"); strcat(absolut_path, (const char *) a[1]);
+      naive_uload(NULL, absolut_path);
       break;
     }
     default: panic("Unhandled syscall ID = %d", a[0]);
