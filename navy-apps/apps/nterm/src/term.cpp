@@ -277,7 +277,7 @@ const char *Terminal::keypress(char ch) {
         break;
       case '\n':
         strcpy(cooked, input);
-        strcat(cooked, "\n");
+        // strcat(cooked, "\n");
         ret = cooked;
         write("\n", 1);
         inp_len = 0;
