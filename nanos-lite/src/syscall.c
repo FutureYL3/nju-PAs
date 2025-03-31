@@ -1,8 +1,11 @@
 #include <common.h>
 #include <fs.h>
 #include "syscall.h"
+#include <proc.h>
+
 
 #define STRACE 0
+
 
 typedef struct file {
   char *name;
@@ -22,6 +25,7 @@ struct timezone {
 
 int brk(void *addr);
 int gettimeofday(struct timeval *tv, struct timezone *tz);
+void naive_uload(PCB *pcb, const char *filename);
 
 void do_syscall(Context *c) {
   uintptr_t a[4];
@@ -66,6 +70,11 @@ void do_syscall(Context *c) {
     }
     case SYS_gettimeofday: {
       c->GPRx = gettimeofday((struct timeval *) a[1], a[2] == 0 ? 0 : (struct timezone *) a[2]);
+      break;
+    }
+    case SYS_execve: {
+      /* if naive_uload failed, it will panic, so we don't check its return value to determine whether SYS_execve should return -1 */
+      naive_uload(NULL, (const char *) a[1]);
       break;
     }
     default: panic("Unhandled syscall ID = %d", a[0]);
