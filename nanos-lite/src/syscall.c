@@ -81,6 +81,7 @@ void do_syscall(Context *c) {
       while (*path != '=')  ++path;
       ++path;
       sprintf(absolut_path, "%s/%s", path, (const char *) a[1]);
+      naive_uload(NULL, absolut_path);
       free(absolut_path);
       break;
     }
