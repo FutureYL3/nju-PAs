@@ -79,6 +79,9 @@ static void sh_handle_cmd(const char *cmd) {
     }
     sh_printf("\n"); // 只在所有参数后添加一个换行
   }
+  else { // 其他命令，直接作为参数传给SYS_execve
+    execve(command, NULL, NULL);
+  }
   
   free(cmd_copy);
 }
