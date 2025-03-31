@@ -48,7 +48,7 @@ static void sh_handle_cmd(const char *cmd) {
   while (pp != NULL) {
     if (*pp == '\n') {
       *pp = '\0';
-      ++pp;
+      break;
     }
   }
   
