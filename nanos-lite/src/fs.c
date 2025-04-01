@@ -110,7 +110,7 @@ size_t fs_read(int fd, void *buf, size_t len) {
       }
       case FD_SBCTL: {
         /* treat the returned value of FD_SBCTL read as result, don't use any parameters */
-        printf("FD_SBCTL read\n");        
+        // printf("FD_SBCTL read\n");
         return file_table[FD_SBCTL].read(NULL, 0, 0);
       }
     }

@@ -137,7 +137,7 @@ size_t fb_write(const void *buf, size_t offset, size_t len) {
 /* the arguments are not used */
 size_t sbctl_read(void *buf, size_t offset, size_t len) {
   AM_AUDIO_STATUS_T stat = io_read(AM_AUDIO_STATUS);
-  printf("sb_size = %d, stat.count = %d\n", sb_size, stat.count);
+  // printf("sb_size = %d, stat.count = %d\n", sb_size, stat.count);
   return sb_size - stat.count;
 }
 

@@ -57,7 +57,7 @@ int SDL_OpenAudio(SDL_AudioSpec *desired, SDL_AudioSpec *obtained) {
   /* allocate memory for buffer according to audio config */
   buf = (uint8_t *) malloc(channels * samples * byte_per_sample);
   BUFFER_SIZE = channels * samples * byte_per_sample;
-  printf("size of buf = %d\n", channels * samples * byte_per_sample);
+  // printf("size of buf = %d\n", channels * samples * byte_per_sample);
 
   return 0;
 }
@@ -87,11 +87,11 @@ void CallbackHelper() {
   if (current_ms - last_ms < interval_ms)  return;
 
   int avai_space = NDL_QueryAudio();
-  printf("Callback helper called, avai_space = %d\n", avai_space);
+  // printf("Callback helper called, avai_space = %d\n", avai_space);
   if (avai_space > BUFFER_SIZE) {
     user_callback(NULL, buf, BUFFER_SIZE);
     NDL_PlayAudio(buf, BUFFER_SIZE);
-    printf("NDL_PlayAudio\n");
+    // printf("NDL_PlayAudio\n");
   }
   
   last_ms = current_ms;
