@@ -58,7 +58,7 @@ intptr_t _syscall_(intptr_t type, intptr_t a0, intptr_t a1, intptr_t a2) {
 
 void _exit(int status) {
   // _syscall_(SYS_exit, status, 0, 0);
-  printf("exit with status %d, now jump to nterm\n", status);
+  // printf("exit with status %d, now jump to nterm\n", status);
   _syscall_(SYS_execve, (intptr_t) START_PROGRAM, 0, 0);
   while (1);
 }
