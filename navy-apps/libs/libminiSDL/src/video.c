@@ -148,6 +148,10 @@ void SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_
 void SDL_UpdateRect(SDL_Surface *s, int x, int y, int w, int h) {
   CallbackHelper();
   CallbackHelper();
+  CallbackHelper();
+  CallbackHelper();
+  CallbackHelper();
+  CallbackHelper();
   // printf("self implemented SDL_UpdateRect called\n");
   if (s == NULL) return;
   if (w < 0 || h < 0) return;
