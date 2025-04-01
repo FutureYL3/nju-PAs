@@ -146,7 +146,7 @@ void SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_
   The rectangle must be confined within the screen boundaries (no clipping is done). 
 */
 void SDL_UpdateRect(SDL_Surface *s, int x, int y, int w, int h) {
-  for (int i = 0; i < 20; ++ i)  CallbackHelper();
+  for (int i = 0; i < 40; ++ i)  CallbackHelper();
   // printf("self implemented SDL_UpdateRect called\n");
   if (s == NULL) return;
   if (w < 0 || h < 0) return;
