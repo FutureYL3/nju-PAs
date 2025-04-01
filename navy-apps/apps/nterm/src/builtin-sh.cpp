@@ -93,7 +93,8 @@ static void sh_handle_cmd(const char *cmd) {
   }
   else { // 其他命令，直接作为参数传给SYS_execve
     sh_printf("now executing program %s\n", command);
-    execve(command, NULL, environ);
+    // execve(command, NULL, environ);
+    execvp(command, NULL);
   }
   
   free(cmd_copy);
