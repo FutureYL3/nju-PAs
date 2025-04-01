@@ -121,7 +121,7 @@ int main(int argc, char *argv[]) {
       }
     }
     SDL_Delay(1000 / FPS);
-    visualize(stream_save, SAMPLES * info.channels);
+    // visualize(stream_save, SAMPLES * info.channels);
   }
 
   SDL_CloseAudio();
