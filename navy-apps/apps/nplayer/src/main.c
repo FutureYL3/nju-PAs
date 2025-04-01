@@ -123,17 +123,18 @@ int main(int argc, char *argv[]) {
     SDL_Delay(1000 / FPS);
     visualize(stream_save, SAMPLES * info.channels);
   }
-  printf("1\n");
+  // printf("1\n");
   SDL_CloseAudio();
-  printf("2\n");
+  // printf("2\n");
   stb_vorbis_close(v);
-  printf("3\n");
+  // printf("3\n");
   SDL_Quit();
-  printf("4\n");
+  // printf("4\n");
   free(stream_save);
-  printf("5\n");
+  // printf("5\n");
   free(buf);
-  printf("6\n");
+  // printf("6\n");
 
-  return 0;
+  exit(0);
+  // return 0;
 }
