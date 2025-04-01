@@ -125,10 +125,15 @@ int main(int argc, char *argv[]) {
   }
   printf("1\n");
   SDL_CloseAudio();
+  printf("2\n");
   stb_vorbis_close(v);
+  printf("3\n");
   SDL_Quit();
+  printf("4\n");
   free(stream_save);
+  printf("5\n");
   free(buf);
+  printf("6\n");
 
   return 0;
 }
