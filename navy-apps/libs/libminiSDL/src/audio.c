@@ -34,6 +34,7 @@ int is_paused = 1; // 0 for not paused and 1 for paused
 int freq;
 int channels;
 int samples;
+size_t BUFFER_SIZE;
 
 int SDL_OpenAudio(SDL_AudioSpec *desired, SDL_AudioSpec *obtained) {
   freq = desired->freq;
@@ -55,8 +56,8 @@ int SDL_OpenAudio(SDL_AudioSpec *desired, SDL_AudioSpec *obtained) {
   }
   /* allocate memory for buffer according to audio config */
   buf = (uint8_t *) malloc(channels * samples * byte_per_sample);
-
-  printf("size of buf = %d\n", sizeof(buf));
+  BUFFER_SIZE = channels * samples * byte_per_sample;
+  printf("size of buf = %d\n", channels * samples * byte_per_sample);
 
   return 0;
 }
@@ -72,24 +73,24 @@ void SDL_PauseAudio(int pause_on) {
 }
 
 fixedpt interval_ms = -1;
-uint32_t last_ms = -1;
+fixedpt last_ms = -1;
 void CallbackHelper() {
   /* if paused, */
   fixedpt fsamples = fixedpt_fromint(samples);
   fixedpt ffreq = fixedpt_fromint(freq);
   if (interval_ms == -1)  interval_ms = fixedpt_mul(fixedpt_div(fsamples, ffreq), fixedpt_fromint(1000));
-  if (last_ms == -1)      last_ms = NDL_GetTicks();
+  if (last_ms == -1)      last_ms = fixedpt_fromint(NDL_GetTicks());
   /* when paused, we don't retrive data by callback */
   if (is_paused)  return;
 
-  uint32_t current_ms = NDL_GetTicks();
+  fixedpt current_ms = fixedpt_fromint(NDL_GetTicks());
   if (current_ms - last_ms < interval_ms)  return;
 
   int avai_space = NDL_QueryAudio();
   printf("Callback helper called, avai_space = %d\n", avai_space);
-  if (avai_space > sizeof(buf)) {
-    user_callback(NULL, buf, sizeof(buf));
-    NDL_PlayAudio(buf, sizeof(buf));
+  if (avai_space > BUFFER_SIZE) {
+    user_callback(NULL, buf, BUFFER_SIZE);
+    NDL_PlayAudio(buf, BUFFER_SIZE);
     printf("NDL_PlayAudio\n");
   }
   
