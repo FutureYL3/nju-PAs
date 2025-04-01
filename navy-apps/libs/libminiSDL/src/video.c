@@ -15,6 +15,7 @@
 #endif
 
 void SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color) {
+  CallbackHelper();
   /* if dstrect is NULL, update the whole canvas */
   if (dstrect == NULL) {
     if (dst->format->BitsPerPixel == 32) {
@@ -82,6 +83,7 @@ void SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color) {
 }
 
 void SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect) {
+  CallbackHelper();
   assert(dst && src);
   assert(dst->format->BitsPerPixel == src->format->BitsPerPixel);
 
@@ -144,6 +146,7 @@ void SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_
   The rectangle must be confined within the screen boundaries (no clipping is done). 
 */
 void SDL_UpdateRect(SDL_Surface *s, int x, int y, int w, int h) {
+  CallbackHelper();
   CallbackHelper();
   // printf("self implemented SDL_UpdateRect called\n");
   if (s == NULL) return;

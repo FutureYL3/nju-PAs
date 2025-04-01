@@ -1,6 +1,7 @@
 #include <NDL.h>
 #include <sdl-timer.h>
 #include <stdio.h>
+#include <SDL.h>
 
 
 #define not_implemented 0
@@ -21,6 +22,8 @@ int SDL_RemoveTimer(SDL_TimerID id) {
 #endif
 
 void SDL_Delay(uint32_t ms) {
+  CallbackHelper();
+  CallbackHelper();
   uint32_t start = NDL_GetTicks();
   uint32_t now;
   while (NDL_GetTicks() - start < ms) {
