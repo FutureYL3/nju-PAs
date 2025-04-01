@@ -22,12 +22,7 @@ int SDL_RemoveTimer(SDL_TimerID id) {
 #endif
 
 void SDL_Delay(uint32_t ms) {
-  CallbackHelper();
-  CallbackHelper();
-  CallbackHelper();
-  CallbackHelper();
-  CallbackHelper();
-  CallbackHelper();
+  for (int i = 0; i < 20; ++ i)  CallbackHelper();
   uint32_t start = NDL_GetTicks();
   uint32_t now;
   while (NDL_GetTicks() - start < ms) {

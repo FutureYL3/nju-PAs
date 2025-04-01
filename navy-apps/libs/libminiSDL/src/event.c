@@ -32,12 +32,7 @@ uint8_t* SDL_GetKeyState(int *numkeys) {
 #endif
 
 int SDL_PollEvent(SDL_Event *ev) {
-  CallbackHelper();
-  CallbackHelper();
-  CallbackHelper();
-  CallbackHelper();
-  CallbackHelper();
-  CallbackHelper();
+  for (int i = 0; i < 20; ++ i)  CallbackHelper();
   char buf[64] = {0};
   int ret = NDL_PollEvent(buf, sizeof(buf));
 
