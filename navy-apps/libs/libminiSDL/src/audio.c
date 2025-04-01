@@ -72,19 +72,19 @@ void SDL_PauseAudio(int pause_on) {
   is_paused = pause_on;
 }
 
-// fixedpt interval_ms = -1;
-// fixedpt last_ms = -1;
+fixedpt interval_ms = -1;
+fixedpt last_ms = -1;
 void CallbackHelper() {
   /* if paused, */
-  // fixedpt fsamples = fixedpt_fromint(samples);
-  // fixedpt ffreq = fixedpt_fromint(freq);
-  // if (interval_ms == -1)  interval_ms = fixedpt_mul(fixedpt_div(fsamples, ffreq), fixedpt_fromint(1000));
-  // if (last_ms == -1)      last_ms = fixedpt_fromint(NDL_GetTicks());
+  fixedpt fsamples = fixedpt_fromint(samples);
+  fixedpt ffreq = fixedpt_fromint(freq);
+  if (interval_ms == -1)  interval_ms = fixedpt_mul(fixedpt_div(fsamples, ffreq), fixedpt_fromint(1000));
+  if (last_ms == -1)      last_ms = fixedpt_fromint(NDL_GetTicks());
   /* when paused, we don't retrive data by callback */
   if (is_paused)  return;
 
-  // fixedpt current_ms = fixedpt_fromint(NDL_GetTicks());
-  // if (current_ms - last_ms < interval_ms)  return;
+  fixedpt current_ms = fixedpt_fromint(NDL_GetTicks());
+  if (current_ms - last_ms < interval_ms)  return;
 
   int avai_space = NDL_QueryAudio();
   printf("Callback helper\n");
@@ -94,5 +94,5 @@ void CallbackHelper() {
     // printf("NDL_PlayAudio\n");
   }
   
-  // last_ms = current_ms;
+  last_ms = current_ms;
 }
