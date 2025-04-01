@@ -109,7 +109,7 @@ int NDL_PlayAudio(void *buf, int len) {
 int sbsize_fd = -1;
 int NDL_QueryAudio() {
   if (sbsize_fd == -1)  sbsize_fd = open("/dev/sbctl", 0, 0);
-
+  printf("NDL_QueryAudio\n");
   return read(sbsize_fd, NULL, 0);
 }
 
