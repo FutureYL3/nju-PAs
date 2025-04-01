@@ -3,6 +3,23 @@
 #include <unistd.h>
 #include <SDL.h>
 #include <stdlib.h>
+#include <string.h>
+
+struct file {
+  char *file_name;
+  #ifdef __GNUC__
+  __attribute__((unused))
+  #endif
+  int file_size;
+  #ifdef __GNUC__
+  __attribute__((unused))
+  #endif
+  int offset;
+} file_list[] = {
+  #include "/home/yl/ics2022/navy-apps/build/ramdisk.h"
+};
+
+#define NR_FILE (sizeof(file_list) / sizeof(file_list[0]))
 
 extern char **environ;
 
@@ -90,6 +107,13 @@ static void sh_handle_cmd(const char *cmd) {
       first_arg = false;
     }
     sh_printf("\n"); // 只在所有参数后添加一个换行
+  }
+  else if (strcmp(command, "ls") == 0) {
+    sh_printf("Available apps:\n");
+    for (int i = 0; i < NR_FILE; ++ i) {
+      char *name = file_list[i].file_name;
+      if (strncmp(name, "/bin/", 5) == 0)  sh_printf("%s\n", name);
+    }
   }
   else { // 其他命令，直接作为参数传给SYS_execve
     sh_printf("now executing program %s\n", command);
