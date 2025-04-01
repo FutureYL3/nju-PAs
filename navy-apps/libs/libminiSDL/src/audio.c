@@ -87,7 +87,7 @@ void CallbackHelper() {
   if (current_ms - last_ms < interval_ms)  return;
 
   int avai_space = NDL_QueryAudio();
-  printf("Callback helper\n");
+  // printf("Callback helper\n");
   if (avai_space > BUFFER_SIZE) {
     user_callback(NULL, buf, BUFFER_SIZE);
     NDL_PlayAudio(buf, BUFFER_SIZE);

@@ -31,7 +31,7 @@ static uint8_t *sbuf = NULL;
 static uint32_t *audio_base = NULL;
 
 static void audio_callback(void *userdata, Uint8 *stream, int len) {
-	printf("audio_callback\n");
+	// printf("audio_callback\n");
  	uint32_t count = audio_base[5];
 	if (count < len) {
 		int i;
