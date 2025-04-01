@@ -31,6 +31,7 @@ static uint8_t *sbuf = NULL;
 static uint32_t *audio_base = NULL;
 
 static void audio_callback(void *userdata, Uint8 *stream, int len) {
+	printf("audio_callback\n");
  	uint32_t count = audio_base[5];
 	if (count < len) {
 		int i;
@@ -57,8 +58,11 @@ static void audio_io_handler(uint32_t offset, int len, bool is_write) {
 		s.samples = audio_base[2];
 		s.callback = audio_callback;
 		Assert(SDL_InitSubSystem(SDL_INIT_AUDIO) == 0, "failed to init sdl audio subsystem\n");
+		printf("SDL_InitSubSystem\n");
 		Assert(SDL_OpenAudio(&s, NULL) == 0, "failed to open audio spec\n");
+		printf("SDL_OpenAudio\n");
 		SDL_PauseAudio(0); // start play
+		printf("SDL_PauseAudio\n");
 		
 	}
 
