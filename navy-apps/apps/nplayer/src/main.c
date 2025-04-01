@@ -135,6 +135,6 @@ int main(int argc, char *argv[]) {
   free(buf);
   // printf("6\n");
 
-  exit(0);
-  // return 0;
+  // exit(0);
+  return 0;
 }

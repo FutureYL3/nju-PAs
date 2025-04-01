@@ -150,4 +150,11 @@ int NDL_Init(uint32_t flags) {
 }
 
 void NDL_Quit() {
+  /* close the audio */
+  NDL_CloseAudio();
+  /* clean the screen */
+  uint32_t *buf = malloc(canvas_w * canvas_h * sizeof(uint32_t));
+  memset(buf, 0, canvas_w * canvas_h * sizeof(uint32_t));
+  NDL_DrawRect(buf, 0, 0, canvas_w, canvas_h);
+  free(buf);
 }
