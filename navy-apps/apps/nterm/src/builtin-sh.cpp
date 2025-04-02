@@ -115,10 +115,16 @@ static void sh_handle_cmd(const char *cmd) {
       if (strncmp(name, "/bin/", 5) == 0)  sh_printf("%s\n", name);
     }
   }
-  else { // 其他命令，直接作为参数传给SYS_execve
-    sh_printf("now executing program %s\n", command);
+  else { // 执行app，先查找，若未找到，提示用户
+    // sh_printf("now executing program %s\n", command);
+    for (int i = 0; i < NR_FILE; ++ i) {
+      char *name = file_list[i].file_name;
+      name += 5; // 跳过 /bin/
+      if (strcmp(name, command) == 0)  execvp(command, NULL);
+    }
     // execve(command, NULL, environ);
-    execvp(command, NULL);
+    // execvp(command, NULL);
+    sh_printf("unknown command: %s\n", command);
   }
   
   free(cmd_copy);
