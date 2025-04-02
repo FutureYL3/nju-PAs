@@ -19,17 +19,13 @@ SDL_AudioSpec *SDL_LoadWAV(const char *file, SDL_AudioSpec *spec, uint8_t **audi
 void SDL_FreeWAV(uint8_t *audio_buf) {
 }
 
-void SDL_LockAudio() {
-}
-
-void SDL_UnlockAudio() {
-}
 #endif
 
 uint8_t *buf;
 void (*user_callback)(void *userdata, uint8_t *stream, int len);
 
 int is_paused = 1; // 0 for not paused and 1 for paused
+int is_locked = 0; // 0 for not locked and 1 for locked
 /* audio config */
 int freq;
 int channels;
@@ -75,13 +71,12 @@ void SDL_PauseAudio(int pause_on) {
 fixedpt interval_ms = -1;
 fixedpt last_ms = -1;
 void CallbackHelper() {
-  /* if paused, */
   fixedpt fsamples = fixedpt_fromint(samples);
   fixedpt ffreq = fixedpt_fromint(freq);
   if (interval_ms == -1)  interval_ms = fixedpt_mul(fixedpt_div(fsamples, ffreq), fixedpt_fromint(1000));
   if (last_ms == -1)      last_ms = fixedpt_fromint(NDL_GetTicks());
-  /* when paused, we don't retrive data by callback */
-  if (is_paused)  return;
+  /* when paused or locked, we don't retrive any data by callback */
+  if (is_paused || is_locked)  return;
 
   fixedpt current_ms = fixedpt_fromint(NDL_GetTicks());
   if (current_ms - last_ms < interval_ms)  return;
@@ -95,4 +90,12 @@ void CallbackHelper() {
   }
   
   last_ms = current_ms;
+}
+
+void SDL_LockAudio() {
+  is_locked = 1;
+}
+
+void SDL_UnlockAudio() {
+  is_locked = 0;
 }
