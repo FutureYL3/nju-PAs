@@ -74,6 +74,7 @@ int SDL_PollEvent(SDL_Event *ev) {
 }
 
 int SDL_WaitEvent(SDL_Event *event) {
+  for (int i = 0; i < 6; ++ i)  CallbackHelper();
   while (true) {
     char buf[64] = {0};
     int ret = NDL_PollEvent(buf, sizeof(buf));
@@ -118,6 +119,7 @@ int SDL_WaitEvent(SDL_Event *event) {
 }
 
 uint8_t* SDL_GetKeyState(int *numkeys) {
+  for (int i = 0; i < 6; ++ i)  CallbackHelper();
   if (numkeys != NULL) {
     *numkeys = NR_KEYS;
   }

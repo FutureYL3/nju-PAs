@@ -15,7 +15,7 @@
 #endif
 
 void SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color) {
-  CallbackHelper();
+  for (int i = 0; i < 6; ++ i)  CallbackHelper();
   /* if dstrect is NULL, update the whole canvas */
   if (dstrect == NULL) {
     if (dst->format->BitsPerPixel == 32) {
@@ -83,7 +83,7 @@ void SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color) {
 }
 
 void SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect) {
-  CallbackHelper();
+  for (int i = 0; i < 6; ++ i)  CallbackHelper();
   assert(dst && src);
   assert(dst->format->BitsPerPixel == src->format->BitsPerPixel);
 
