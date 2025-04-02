@@ -119,7 +119,7 @@ int SDL_WaitEvent(SDL_Event *event) {
 }
 
 uint8_t* SDL_GetKeyState(int *numkeys) {
-  // for (int i = 0; i < 6; ++ i)  CallbackHelper();
+  for (int i = 0; i < 6; ++ i)  CallbackHelper();
   if (numkeys != NULL) {
     *numkeys = NR_KEYS;
   }
