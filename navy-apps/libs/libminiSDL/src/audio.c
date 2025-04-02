@@ -73,24 +73,24 @@ fixedpt last_ms = -1;
 void CallbackHelper() {
   fixedpt fsamples = fixedpt_fromint(samples);
   fixedpt ffreq = fixedpt_fromint(freq);
-  printf("2\n");
+  // printf("2\n");
   if (interval_ms == -1)  interval_ms = fixedpt_mul(fixedpt_div(fsamples, ffreq), fixedpt_fromint(1000));
   if (last_ms == -1)      last_ms = fixedpt_fromint(NDL_GetTicks());
   /* when paused or locked, we don't retrive any data by callback */
   if (is_paused || is_locked)  return;
-  printf("3\n");
+  // printf("3\n");
   fixedpt current_ms = fixedpt_fromint(NDL_GetTicks());
   if (current_ms - last_ms < interval_ms)  return;
-  printf("4\n");
+  // printf("4\n");
   int avai_space = NDL_QueryAudio();
-  printf("5\n");
+  // printf("5\n");
   // printf("Callback helper\n");
   if (avai_space > BUFFER_SIZE) {
-    printf("6\n");
+    // printf("6\n");
     user_callback(NULL, buf, BUFFER_SIZE);
-    printf("7\n");
+    // printf("7\n");
     NDL_PlayAudio(buf, BUFFER_SIZE);
-    printf("8\n");
+    // printf("8\n");
     // printf("NDL_PlayAudio\n");
   }
   
