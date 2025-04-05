@@ -31,7 +31,7 @@ f(30) f(31)
 .globl __am_asm_trap
 __am_asm_trap:
   addi sp, sp, -CONTEXT_SIZE
-
+  # store the context
   MAP(REGS, PUSH)
 
   csrr t0, mcause
@@ -46,10 +46,14 @@ __am_asm_trap:
   li a0, (1 << 17)
   or t1, t1, a0
   csrw mstatus, t1
-
+  # handle interruption
   mv a0, sp
   jal __am_irq_handle
 
+  # make sp point at returned context to achieve context switch and multi program
+  mv sp, a0
+
+  # restore the context
   LOAD t1, OFFSET_STATUS(sp)
   LOAD t2, OFFSET_EPC(sp)
   csrw mstatus, t1
@@ -58,4 +62,5 @@ __am_asm_trap:
   MAP(REGS, POP)
 
   addi sp, sp, CONTEXT_SIZE
+  # return to mepc to continue executing another process or current process
   mret

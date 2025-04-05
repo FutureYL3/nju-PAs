@@ -41,7 +41,10 @@ bool cte_init(Context*(*handler)(Event, Context*)) {
 }
 
 Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
-  return NULL;
+  Context *context = (Context *) ((char *) kstack.end - sizeof(Context));
+  context->mepc = (uintptr_t) entry - 4; // cooperate with `c->mepc += 4;`
+  context->mstatus = 0x1800; // to pass difftest
+  return context;
 }
 
 void yield() {

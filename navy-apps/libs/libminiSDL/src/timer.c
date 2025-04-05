@@ -31,6 +31,7 @@ void SDL_Delay(uint32_t ms) {
 }
 
 uint32_t SDL_GetTicks() {
+  /* do not invoke CallbackHelper here, or it will trigger segmentation fault(reason unknown yet) */
   // for (int i = 0; i < 6; ++ i)  CallbackHelper();
   return NDL_GetTicks();
 }

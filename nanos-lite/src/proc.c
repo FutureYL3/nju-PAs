@@ -21,7 +21,15 @@ void hello_fun(void *arg) {
   }
 }
 
+void context_kload(PCB *pcb, void (*entry)(void *), void *arg) {
+  Area kstack = { .start = (void *) pcb->stack, .end = (void *) (pcb->stack + STACK_SIZE) };
+  Context *context = kcontext(kstack, entry, arg);
+  pcb->cp = context;
+}
+
 void init_proc() {
+  /* create context for kernal thread `hello_fun`, and bind it to pcb[0] */
+  context_kload(&pcb[0], hello_fun, NULL);
   switch_boot_pcb();
 
   Log("Initializing processes...");
@@ -31,5 +39,12 @@ void init_proc() {
 }
 
 Context* schedule(Context *prev) {
-  return NULL;
+  // save the context pointer
+  current->cp = prev;
+
+  // always select pcb[0] as the new process
+  current = &pcb[0];
+
+  // then return the new context
+  return current->cp;
 }
