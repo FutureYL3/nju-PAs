@@ -41,9 +41,14 @@ bool cte_init(Context*(*handler)(Event, Context*)) {
 }
 
 Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
+  /* create the context */
   Context *context = (Context *) ((char *) kstack.end - sizeof(Context));
+  /* set the kernal thread entry */
   context->mepc = (uintptr_t) entry - 4; // cooperate with `c->mepc += 4;`
+  /* difftest */
   context->mstatus = 0x1800; // to pass difftest
+  /* set arguments passed to the kernal thread */
+  context->GPR2 = (uintptr_t) arg;
   return context;
 }
 
