@@ -20,6 +20,7 @@ int screen_w = 0, screen_h = 0;
 int sb_size = 0;
 
 size_t serial_write(const void *buf, size_t offset, size_t len) {
+  yield();
   char *p = (char *) buf;
   for (int i = 0; i < len; ++ i) {
     putch(p[i]);
@@ -28,6 +29,7 @@ size_t serial_write(const void *buf, size_t offset, size_t len) {
 }
 
 size_t events_read(void *buf, size_t offset, size_t len) {
+  yield();
   if (len == 0)  return -1;
 
   AM_INPUT_KEYBRD_T kbd = io_read(AM_INPUT_KEYBRD);
@@ -72,6 +74,7 @@ size_t dispinfo_read(void *buf, size_t offset, size_t len) {
   2025.3.30 update: sync at last write and remove the feature
 */
 size_t fb_write(const void *buf, size_t offset, size_t len) {
+  yield();
   int x = (offset / 4) % screen_w, y = (offset / 4) / screen_w;
 
   uint32_t *p = (uint32_t *) buf;
@@ -155,6 +158,7 @@ size_t sb_write(const void *buf, size_t offset, size_t len) {
 
 
 size_t sbctl_write(const void *buf, size_t offset, size_t len) {
+  yield();
   
   assert(len == 12);  // for 3 int(4 bytes)
   int *p = (int *) buf;

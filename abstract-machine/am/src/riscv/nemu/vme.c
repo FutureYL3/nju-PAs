@@ -70,5 +70,12 @@ void map(AddrSpace *as, void *va, void *pa, int prot) {
 }
 
 Context *ucontext(AddrSpace *as, Area kstack, void *entry) {
-  return NULL;
+  /* create the context */
+  Context *context = (Context *) ((char *) kstack.end - sizeof(Context));
+  /* set the kernal thread entry */
+  context->mepc = (uintptr_t) entry - 4; // cooperate with `c->mepc += 4;`
+  /* difftest */
+  context->mstatus = 0x1800; // to pass difftest
+  
+  return context;
 }

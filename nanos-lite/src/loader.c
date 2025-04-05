@@ -88,3 +88,21 @@ void naive_uload(PCB *pcb, const char *filename) {
   ((void(*)())entry) ();
 }
 
+void context_kload(PCB *pcb, void (*entry)(void *), void *arg) {
+  Area kstack = RANGE(pcb->stack, pcb->stack + STACK_SIZE);
+  Context *context = kcontext(kstack, entry, arg);
+  pcb->cp = context;
+}
+
+extern Area heap;
+void context_uload(PCB *pcb, const char *filename) {
+  /* load the user program and get the entry */
+  void (*entry)(void *) = (void (*)(void *)) loader(pcb, filename); 
+  /* create context in kernal stack */
+  Area kstack = RANGE(pcb->stack, pcb->stack + STACK_SIZE);
+  Context *context = ucontext(NULL, kstack, entry);
+  /* set user stack top pointer to head.end and store it in GPRx */
+  context->GPRx = (uintptr_t) heap.end;
+  pcb->cp = context;
+}
+
