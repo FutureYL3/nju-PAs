@@ -125,7 +125,7 @@ static void sh_handle_cmd(const char *cmd) {
       char **argv = (char **) malloc(10 * sizeof(char *)); // 10 arguments should be enough
       if (strcmp(name, command) == 0) {
         int count = 0;
-        argv[count++] = file_list[i].file_name;
+        argv[count++] = strdup(file_list[i].file_name);
         while (*p) {
           // 跳过参数之间的空格
           while (*p && isspace(*p))  p++;
@@ -154,7 +154,7 @@ static void sh_handle_cmd(const char *cmd) {
           
           // 保存参数
           // printf("%s\n", arg_start);
-          argv[count++] = arg_start;
+          argv[count++] = strdup(arg_start);
         }
         argv[count] = NULL;
         for (int j = 0; j < count; ++ j)  printf("%s\n", argv[j]);
