@@ -112,6 +112,9 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   /* apply for new stack memeory */
   void *end = (void *) ((char *) new_page(NR_PAGE) + STACK_SIZE);
   /* set the passed arguments and environment variables */
+  printf("%s\n", filename);
+  printf("%s\n", argv[1]);
+  printf("%s\n", *envp);
   int argc = 0;
   char *last_end = (char *) end, *start;
   while (argv[argc] != NULL) {
