@@ -87,6 +87,8 @@ void do_syscall(Context *c) {
         break;
       }
 
+      printf("exec %s now\n", u_filename);
+
       // --- 定义内核缓冲区和限制 ---
       #define K_MAX_ARGS 10      // 内核允许的最大参数数量 (包括 argv[0])
       #define K_MAX_ENVS 10      // 内核允许的最大环境变量数量
