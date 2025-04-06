@@ -119,7 +119,7 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   int argc = 0;
   char *last_end = (char *) end, *start;
   while (argv[argc] != NULL) {
-    printf("address of %s: %p\n", argv[argc], argv[argc]);
+    // printf("address of %s: %p\n", argv[argc], argv[argc]);
     size_t len = strlen(argv[argc]) + 1; // plus 1 for `\0`
     start = (char *) last_end - len;
     memcpy(start, argv[argc], len);
@@ -130,7 +130,7 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   int envc = 0;
   /* avoid bad envp pointer address from libc */
   while (((uintptr_t) *envp < 0x88000000 && (uintptr_t) *envp > 0x80000000) && envp[envc] != NULL) {
-    printf("address of %s: %p\n", envp[envc], envp[envc]);
+    // printf("address of %s: %p\n", envp[envc], envp[envc]);
     size_t len = strlen(envp[envc]) + 1; // plus 1 for `\0`
     start = (char *) last_end - len;
     memcpy(start, envp[envc], len);
