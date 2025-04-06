@@ -78,7 +78,8 @@ static void sh_handle_cmd(const char *cmd) {
     sh_printf("Available apps:\n");
     for (int i = 0; i < NR_FILE; ++ i) {
       char *name = file_list[i].file_name;
-      if (strncmp(name, "/bin/", 5) == 0)  sh_printf("%s\n", name);
+      if (strncmp(name, "/bin/", 5) == 0 || strncmp(name, "/usr/bin", 8) == 0)
+        sh_printf("%s\n", name);
     }
   }
   else { // 执行app，先查找，若未找到，提示用户
@@ -86,9 +87,21 @@ static void sh_handle_cmd(const char *cmd) {
     int i;
     for (i = 0; i < NR_FILE; ++ i) {
       char *name = file_list[i].file_name;
-      char *bin_name = name + 5; // 跳过 /bin/
-      char *usrbin_name = name + 8; // 跳过 /usr/bin
-      if (strcmp(bin_name, command) == 0 || strcmp(usrbin_name, command) == 0) {
+      bool found = false;
+      // 检查是否以 /bin/ 开头
+      if (strncmp(name, "/bin/", 5) == 0) {
+        char *basename = name + 5;
+        if (strcmp(basename, command) == 0) {
+          found = true;
+        }
+      } 
+      else if (strncmp(name, "/usr/bin/", 9) == 0) { // 注意是 9 个字符
+        char *basename = name + 9;
+        if (strcmp(basename, command) == 0) {
+          found = true;
+        }
+      }
+      if (found) {
         char *argv[10] = {NULL};  // 10 arguments should be enough
         int count = 0;
         argv[count++] = file_list[i].file_name;
