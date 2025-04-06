@@ -127,22 +127,22 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
     ++argc;
   }
   char *argv_start = last_end;
-  // int envc = 0;
-  // while (envp[envc] != NULL) {
-  //   size_t len = strlen(envp[envc]) + 1; // plus 1 for `\0`
-  //   start = (char *) last_end - len;
-  //   memcpy(start, envp[envc], len);
-  //   last_end = start;
-  //   ++envc;
-  // }
-  // char *envp_start = last_end;
+  int envc = 0;
+  while (envp[envc] != NULL) {
+    size_t len = strlen(envp[envc]) + 1; // plus 1 for `\0`
+    start = (char *) last_end - len;
+    memcpy(start, envp[envc], len);
+    last_end = start;
+    ++envc;
+  }
+  char *envp_start = last_end;
   uint32_t *p_end = (uint32_t *) ROUNDDOWN(last_end, 4); // align for 4 bytes
   *(--p_end) = 0;
-  // while (envc--) {
-  //   *(--p_end) = (uint32_t) envp_start;
-  //   envp_start += strlen((const char *) envp_start) + 1; // plus 1 for `\0`
-  // }
-  // *(--p_end) = 0;
+  while (envc--) {
+    *(--p_end) = (uint32_t) envp_start;
+    envp_start += strlen((const char *) envp_start) + 1; // plus 1 for `\0`
+  }
+  *(--p_end) = 0;
   int count = argc;
   while (count--) {
     *(--p_end) = (uint32_t) argv_start;
