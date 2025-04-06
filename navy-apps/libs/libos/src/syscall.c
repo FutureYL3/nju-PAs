@@ -57,11 +57,12 @@ intptr_t _syscall_(intptr_t type, intptr_t a0, intptr_t a1, intptr_t a2) {
 #define NTERM_PATH "/bin/nterm"
 #define START_PROGRAM NTERM_PATH
 
+static char *const argv[] = {"/bin/nterm", NULL};
+static char *const envp[] = {NULL};
 void _exit(int status) {
   // _syscall_(SYS_exit, status, 0, 0);
   // printf("exit with status %d, now jump to nterm\n", status);
-  char *const argv[] = {"/bin/nterm", NULL};
-  char *const envp[] = {NULL};
+  
   _syscall_(SYS_execve, (intptr_t) START_PROGRAM, (intptr_t) argv, (intptr_t) envp);
   
   /* should not reach here */
