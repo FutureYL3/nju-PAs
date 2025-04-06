@@ -74,41 +74,6 @@ static void sh_handle_cmd(const char *cmd) {
     ++pp;
   }
   
-  // if (strcmp(command, "echo") == 0) {
-  //   // 处理echo命令的参数
-  //   while (*p) {
-  //     // 跳过参数之间的空格
-  //     while (*p && isspace(*p))  p++;
-  //     if (!*p)  break;
-      
-  //     char *arg_start = p;
-  //     char *arg_end = p;
-      
-  //     // 处理带引号的参数
-  //     if (*p == '"') {
-  //       p++; // 跳过开始引号
-  //       arg_start = p;
-        
-  //       // 查找结束引号
-  //       while (*p && *p != '"')  p++;
-  //       if (*p == '"') {
-  //         arg_end = p;
-  //         *p++ = '\0'; // 替换引号为字符串结束符
-  //       }
-  //     } else {
-  //       // 处理普通参数（无引号）
-  //       while (*p && !isspace(*p)) p++;
-  //       arg_end = p;
-  //       if (*p) *p++ = '\0';
-  //     }
-      
-  //     // 打印参数，第一个参数前不加空格
-  //     if (!first_arg) sh_printf(" ");
-  //     sh_printf("%s", arg_start);
-  //     first_arg = false;
-  //   }
-  //   sh_printf("\n"); // 只在所有参数后添加一个换行
-  // }
   if (strcmp(command, "ls") == 0) {
     sh_printf("Available apps:\n");
     for (int i = 0; i < NR_FILE; ++ i) {
@@ -121,8 +86,9 @@ static void sh_handle_cmd(const char *cmd) {
     int i;
     for (i = 0; i < NR_FILE; ++ i) {
       char *name = file_list[i].file_name;
-      name += 5; // 跳过 /bin/
-      if (strcmp(name, command) == 0) {
+      char *bin_name = name + 5; // 跳过 /bin/
+      char *usrbin_name = name + 8; // 跳过 /usr/bin
+      if (strcmp(bin_name, command) == 0 || strcmp(usrbin_name, command) == 0) {
         char *argv[10] = {NULL};  // 10 arguments should be enough
         int count = 0;
         argv[count++] = file_list[i].file_name;
