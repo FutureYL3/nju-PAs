@@ -157,7 +157,7 @@ static void sh_handle_cmd(const char *cmd) {
           argv[count++] = strdup(arg_start);
         }
         argv[count] = NULL;
-        for (int j = 0; j < count; ++ j)  printf("%s\n", argv[j]);
+        for (int j = 0; j < count; ++ j)  printf("%p\n", argv[j]);
         execvp(command, argv);
         break;
       }
