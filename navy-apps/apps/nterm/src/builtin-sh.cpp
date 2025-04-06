@@ -118,7 +118,8 @@ static void sh_handle_cmd(const char *cmd) {
   }
   else { // 执行app，先查找，若未找到，提示用户
     // sh_printf("now executing program %s\n", command);
-    for (int i = 0; i < NR_FILE; ++ i) {
+    int i;
+    for (i = 0; i < NR_FILE; ++ i) {
       char *name = file_list[i].file_name;
       name += 5; // 跳过 /bin/
       char **argv = (char **) malloc(10 * sizeof(char *)); // 10 arguments should be enough
@@ -157,11 +158,12 @@ static void sh_handle_cmd(const char *cmd) {
         }
         argv[count] = NULL;
         execvp(command, argv);
+        break;
       }
     }
     // execve(command, NULL, environ);
     // execvp(command, NULL);
-    sh_printf("unknown command: %s\n", command);
+    if (i == NR_FILE)  sh_printf("unknown command: %s\n", command);
   }
   
   free(cmd_copy);
