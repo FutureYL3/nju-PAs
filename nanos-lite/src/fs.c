@@ -83,7 +83,7 @@ int fs_open(const char *pathname, int flags, int mode) {
   for (i = 0; i < NR_FILE; ++ i) {
     if (strcmp(file_table[i].name, pathname) == 0)  break;
   }
-  if (i == NR_FILE)  panic("Can't find file %s", pathname);
+  if (i == NR_FILE)  return -1;
 
   return i;
 }

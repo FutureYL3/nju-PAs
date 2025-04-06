@@ -6,6 +6,7 @@
 #include "syscall.h"
 #include <stdio.h>
 #include <NDL.h>
+#include <errno.h>
 
 // helper macros
 #define _concat(x, y) x ## y
@@ -109,7 +110,11 @@ int _execve(const char *fname, char * const argv[], char *const envp[]) {
   // printf("%s\n", fname);
   // printf("%s\n", argv[1]);
   // printf("%s\n", *envp);
-  return _syscall_(SYS_execve, (intptr_t) fname, (intptr_t) argv, (intptr_t) envp);
+  int ret = _syscall_(SYS_execve, (intptr_t) fname, (intptr_t) argv, (intptr_t) envp);
+  if (ret < 0) {
+    errno = -ret;
+    return -1;
+  }
 }
 
 // Syscalls below are not used in Nanos-lite.

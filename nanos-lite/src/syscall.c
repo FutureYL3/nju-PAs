@@ -81,6 +81,12 @@ void do_syscall(Context *c) {
       char *const *u_argv = (char *const *) a[2];
       char *const *u_envp = (char *const *) a[3];
 
+      // check whether the file exist
+      if (fs_open(u_filename, 0, 0) < 0) {
+        c->GPRx = -2;
+        break;
+      }
+
       // --- 定义内核缓冲区和限制 ---
       #define K_MAX_ARGS 10      // 内核允许的最大参数数量 (包括 argv[0])
       #define K_MAX_ENVS 10      // 内核允许的最大环境变量数量
