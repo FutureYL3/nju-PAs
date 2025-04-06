@@ -126,7 +126,7 @@ void do_syscall(Context *c) {
 
       // --- 检查是否是由 _exit 发起的特殊 "reload nterm" 情况 ---
       if (u_argv == NULL && u_envp == NULL && strcmp(k_filename, "/bin/nterm") == 0) {
-          Log("Execve: 检测到来自 _exit 的 /bin/nterm 特殊重载请求。");
+          Log("Execve: detected special nterm reload request from _exit.");
           // 内核内部生成 nterm 的默认参数/环境
           strcpy(k_argv_storage[0], "/bin/nterm");
           k_argv[0] = k_argv_storage[0];

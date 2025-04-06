@@ -138,16 +138,16 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
     ++envc;
   }
   char *envp_start = last_end;
-  uint32_t *p_end = (uint32_t *) ROUNDDOWN(last_end, 4); // align for 4 bytes
+  uintptr_t *p_end = (uintptr_t *) ROUNDDOWN(last_end, 4); // align for 4 bytes
   *(--p_end) = 0;
   while (envc--) {
-    *(--p_end) = (uint32_t) envp_start;
+    *(--p_end) = (uintptr_t) envp_start;
     envp_start += strlen((const char *) envp_start) + 1; // plus 1 for `\0`
   }
   *(--p_end) = 0;
   int count = argc;
   while (count--) {
-    *(--p_end) = (uint32_t) argv_start;
+    *(--p_end) = (uintptr_t) argv_start;
     argv_start += strlen((const char *) argv_start) + 1; // plus 1 for `\0`
   }
   *(--p_end) = argc;
