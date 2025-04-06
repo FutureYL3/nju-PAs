@@ -153,10 +153,11 @@ static void sh_handle_cmd(const char *cmd) {
           }
           
           // 保存参数
-          printf("%s\n", arg_start);
+          // printf("%s\n", arg_start);
           argv[count++] = arg_start;
         }
         argv[count] = NULL;
+        for (int j = 0; j < count; ++ j)  printf("%s\n", argv[j]);
         execvp(command, argv);
         break;
       }
