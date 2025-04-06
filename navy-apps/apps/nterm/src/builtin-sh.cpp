@@ -121,7 +121,7 @@ static void sh_handle_cmd(const char *cmd) {
     for (int i = 0; i < NR_FILE; ++ i) {
       char *name = file_list[i].file_name;
       name += 5; // 跳过 /bin/
-      char *argv[10] = { }; // 10 arguments should be enough
+      char **argv = (char **) malloc(10 * sizeof(char *)); // 10 arguments should be enough
       if (strcmp(name, command) == 0) {
         int count = 0;
         argv[count++] = file_list[i].file_name;
@@ -152,10 +152,6 @@ static void sh_handle_cmd(const char *cmd) {
           }
           
           // 保存参数
-          if (!first_arg) sh_printf(" ");
-          sh_printf("%s", arg_start);
-          first_arg = false;
-
           argv[count++] = arg_start;
         }
         argv[count] = NULL;
