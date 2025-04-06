@@ -63,6 +63,7 @@ void _exit(int status) {
   // printf("exit with status %d, now jump to nterm\n", status);
   /* we make argv and envp both NULL to tell the kernel we need to reload nterm */
   /* normally, a process cannot invoke sys_execve with argv and envp both NULL */
+  printf("here");
   _syscall_(SYS_execve, (intptr_t) START_PROGRAM, (intptr_t) NULL, (intptr_t) NULL);
   
   /* should not reach here */
