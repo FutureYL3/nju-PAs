@@ -84,8 +84,7 @@ int main() {
         case SDLK_UP: prev(rep); rep = 0; g = 0; break;
         case SDLK_Q: {
           SDL_Quit();
-          exit(0); 
-          break;
+          return 0; 
         }
         case SDLK_G:
           g ++;
