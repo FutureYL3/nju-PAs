@@ -76,21 +76,106 @@ void do_syscall(Context *c) {
       break;
     }
     case SYS_execve: {
-      /* if naive_uload failed, it will panic, so we don't check its return value to determine whether SYS_execve should return -1 */
-      // char *absolut_path = (char *) malloc(50);
-      // const char **env = (const char **) a[3];
-      // while (strncmp(*env, "PATH=", 5) != 0)  ++env;
-      // const char *path = *env;
-      // while (*path != '=')  ++path;
-      // ++path;
-      // sprintf(absolut_path, "%s/%s", path, (const char *) a[1]);
-      // naive_uload(NULL, (const char *) a[1]);
-      // printf("1\n");
-      context_uload(current, (const char *) a[1], (char *const *) a[2], (char *const *) a[3]);
-      // printf("2\n");
+      // --- 从用户寄存器获取原始指针 ---
+      const char *u_filename = (const char *) a[1];
+      char *const *u_argv = (char *const *) a[2];
+      char *const *u_envp = (char *const *) a[3];
+
+      // --- 定义内核缓冲区和限制 ---
+      #define K_MAX_ARGS 10      // 内核允许的最大参数数量 (包括 argv[0])
+      #define K_MAX_ENVS 10      // 内核允许的最大环境变量数量
+      #define K_STR_LEN 256      // filename, argv[*], envp[*] 的最大长度 (包括 '\0')
+
+      char k_filename[K_STR_LEN] = {0}; // 缓冲区：存储文件名的副本
+      char k_argv_storage[K_MAX_ARGS][K_STR_LEN] = {{0}}; // 缓冲区：存储所有 argv 字符串的副本
+      char k_envp_storage[K_MAX_ENVS][K_STR_LEN] = {{0}}; // 缓冲区：存储所有 envp 字符串的副本
+
+      // --- 内核空间的指针数组 (这才是要传递给 context_uload 的！) ---
+      char *k_argv[K_MAX_ARGS + 1]; // +1 for NULL terminator
+      char *k_envp[K_MAX_ENVS + 1]; // +1 for NULL terminator
+
+      int argc = 0;
+      int envc = 0;
+
+      // --- (可选但推荐) 基本的指针有效性检查 ---
+      if (!u_filename || !u_argv || !u_envp) {
+        Log("Execve error: received NULL pointer for filename, argv, or envp.");
+        c->GPRx = -1; // 设置错误返回值
+        break;        // 退出 syscall 处理
+      }
+
+      // --- 1. 复制 filename ---
+      // !!! 仍然是风险点：直接访问用户内存 !!!
+      size_t len = strlen(u_filename);
+      if (len >= K_STR_LEN) { // 检查长度（>= 因为要算上 '\0'）
+        Log("Execve error: filename too long (max %d).", K_STR_LEN - 1);
+        c->GPRx = -1;
+        break;
+      }
+      strcpy(k_filename, u_filename);
+
+      // --- 2. 复制 argv ---
+      for (argc = 0; argc < K_MAX_ARGS; ++argc) {
+        char *u_arg = u_argv[argc]; // 获取用户空间的 argv 指针
+        if (u_arg == NULL) {
+          break; // 用户 argv 结束
+        }
+
+        len = strlen(u_arg); // 获取用户参数长度 (风险点)
+        if (len >= K_STR_LEN) {
+          Log("Execve error: argument %d too long (max %d).", argc, K_STR_LEN - 1);
+          c->GPRx = -1;
+          break;
+        }
+
+        // 复制字符串到内核存储区 k_argv_storage[argc]
+        strcpy(k_argv_storage[argc], u_arg);
+        // 将指向内核存储区字符串的指针存入内核指针数组 k_argv[argc]
+        k_argv[argc] = k_argv_storage[argc];
+      }
+      // 检查是否因为参数过多而退出循环
+      if (argc == K_MAX_ARGS && u_argv[argc] != NULL) {
+        Log("Execve error: too many arguments (limit %d).", K_MAX_ARGS);
+        c->GPRx = -1;
+        break;
+      }
+      k_argv[argc] = NULL; // 正确地用 NULL 终止内核指针数组
+
+      // --- 3. 复制 envp (逻辑同 argv) ---
+      for (envc = 0; envc < K_MAX_ENVS; ++envc) {
+        char *u_env = u_envp[envc];
+        if (u_env == NULL) {
+          break;
+        }
+
+        len = strlen(u_env);
+        if (len >= K_STR_LEN) {
+          Log("Execve error: environment variable %d too long (max %d).", envc, K_STR_LEN - 1);
+          c->GPRx = -1;
+          break;
+        }
+
+        strcpy(k_envp_storage[envc], u_env);
+        k_envp[envc] = k_envp_storage[envc];
+      }
+      if (envc == K_MAX_ENVS && u_envp[envc] != NULL) {
+        Log("Execve error: too many environment variables (limit %d).", K_MAX_ENVS);
+        c->GPRx = -1;
+        break;
+      }
+      k_envp[envc] = NULL; // 正确地用 NULL 终止内核指针数组
+
+
+      // --- 4. 使用正确的内核指针数组调用 context_uload ---
+      // 现在传递的是 k_argv (类型 char *[]) 和 k_envp (类型 char *[])，
+      // 它们会正确地衰变为 context_uload 期望的 char ** 类型。
+      context_uload(current, k_filename, k_argv, k_envp);
+
+      // --- 5. context_uload 成功后 ---
       switch_boot_pcb();
       yield();
-      // free(absolut_path);
+
+      // 正常情况不应到达这里
       break;
     }
     default: panic("Unhandled syscall ID = %d", a[0]);

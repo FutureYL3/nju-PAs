@@ -128,6 +128,7 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   }
   char *argv_start = last_end;
   int envc = 0;
+  /* avoid bad envp pointer address from libc */
   while (((uintptr_t) *envp < 0x88000000 && (uintptr_t) *envp > 0x80000000) && envp[envc] != NULL) {
     size_t len = strlen(envp[envc]) + 1; // plus 1 for `\0`
     start = (char *) last_end - len;
