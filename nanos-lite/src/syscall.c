@@ -80,7 +80,7 @@ void do_syscall(Context *c) {
       const char *u_filename = (const char *) a[1];
       char *const *u_argv = (char *const *) a[2];
       char *const *u_envp = (char *const *) a[3];
-
+      printf("In SYS_execve\n");
       printf("%s\n", u_filename);
       printf("%p\n", u_argv);
       printf("%p\n", u_envp);

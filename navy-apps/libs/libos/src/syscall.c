@@ -59,6 +59,7 @@ intptr_t _syscall_(intptr_t type, intptr_t a0, intptr_t a1, intptr_t a2) {
 #define START_PROGRAM NTERM_PATH
 
 void _exit(int status) {
+  printf("here");
   // _syscall_(SYS_exit, status, 0, 0);
   // printf("exit with status %d, now jump to nterm\n", status);
   /* we make argv and envp both NULL to tell the kernel we need to reload nterm */
