@@ -46,7 +46,6 @@ static inline bool isspace(char c) {
   return c == ' ';
 }
 
-char *argv[10];  // 10 arguments should be enough
 static void sh_handle_cmd(const char *cmd) {
   setenv("PATH", "/bin", 0);
   char *cmd_copy = strdup(cmd);
@@ -120,13 +119,11 @@ static void sh_handle_cmd(const char *cmd) {
   else { // 执行app，先查找，若未找到，提示用户
     // sh_printf("now executing program %s\n", command);
     int i;
-    // clear the argv
-    for (int j = 0; j < 10; ++ j)  argv[j] = NULL;
-
     for (i = 0; i < NR_FILE; ++ i) {
       char *name = file_list[i].file_name;
       name += 5; // 跳过 /bin/
       if (strcmp(name, command) == 0) {
+        char *argv[10] = {NULL};  // 10 arguments should be enough
         int count = 0;
         argv[count++] = file_list[i].file_name;
         while (*p) {
