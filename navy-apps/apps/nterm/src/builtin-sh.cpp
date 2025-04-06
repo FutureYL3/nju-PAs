@@ -71,6 +71,7 @@ static void sh_handle_cmd(const char *cmd) {
       *pp = '\0';
       break;
     }
+    ++pp;
   }
   
   if (strcmp(command, "echo") == 0) {
