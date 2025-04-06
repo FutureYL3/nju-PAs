@@ -103,7 +103,9 @@ extern Area heap;
 /* make sure that the argv[0] is always executed filename, this is ensured by caller */
 void context_uload(PCB *pcb, const char *filename, char *const argv[], char *const envp[]) {
   /* load the user program and get the entry */
+  Log("Loading program: %s", filename);
   void (*entry)(void *) = (void (*)(void *)) loader(pcb, filename); 
+  Log("Load program %s success", filename);
   /* create context in kernel stack */
   Area kstack = RANGE(pcb->stack, pcb->stack + STACK_SIZE);
   Context *context = ucontext(NULL, kstack, entry);
@@ -113,7 +115,7 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   int argc = 0;
   char *last_end = (char *) end, *start;
   while (argv[argc] != NULL) {
-    
+    printf("address of %s: %p\n", argv[argc], argv[argc]);
     size_t len = strlen(argv[argc]) + 1; // plus 1 for `\0`
     start = (char *) last_end - len;
     memcpy(start, argv[argc], len);
