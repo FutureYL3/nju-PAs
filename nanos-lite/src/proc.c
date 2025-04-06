@@ -18,7 +18,7 @@ void switch_boot_pcb() {
 void hello_fun(void *arg) {
   int j = 1;
   while (1) {
-    Log("Hello World from Nanos-lite with arg '%s' for the %dth time!", (char *) arg, j);
+    // Log("Hello World from Nanos-lite with arg '%s' for the %dth time!", (char *) arg, j);
     j ++;
     yield();
   }
@@ -28,7 +28,7 @@ void init_proc() {
   Log("Initializing processes...");
 
   // load program here
-  // context_kload(&pcb[0], hello_fun, "hello_fun 1");
+  context_kload(&pcb[0], hello_fun, "hello_fun 1");
   // context_uload(&pcb[0], "/bin/hello");
   char *const argv[] = {NULL};
   char *const envp[] = {NULL};
