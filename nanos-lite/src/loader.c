@@ -102,13 +102,6 @@ void context_kload(PCB *pcb, void (*entry)(void *), void *arg) {
 extern Area heap;
 /* make sure that the argv[0] is always executed filename, this is ensured by caller */
 void context_uload(PCB *pcb, const char *filename, char *const argv[], char *const envp[]) {
-  /* load the user program and get the entry */
-  Log("Loading program: %s", filename);
-  void (*entry)(void *) = (void (*)(void *)) loader(pcb, filename); 
-  Log("Load program %s success", filename);
-  /* create context in kernel stack */
-  Area kstack = RANGE(pcb->stack, pcb->stack + STACK_SIZE);
-  Context *context = ucontext(NULL, kstack, entry);
   /* apply for new stack memeory */
   void *end = (void *) ((char *) new_page(NR_PAGE) + STACK_SIZE);
   printf("end is %p\n", (char *) end);
@@ -149,6 +142,13 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
     argv_start += strlen((const char *) argv_start) + 1; // plus 1 for `\0`
   }
   *(--p_end) = argc;
+  /* load the user program and get the entry */
+  Log("Loading program: %s", filename);
+  void (*entry)(void *) = (void (*)(void *)) loader(pcb, filename); 
+  Log("Load program %s success", filename);
+  /* create context in kernel stack */
+  Area kstack = RANGE(pcb->stack, pcb->stack + STACK_SIZE);
+  Context *context = ucontext(NULL, kstack, entry);
   /* set GPRX to address of argc */
   context->GPRx = (uintptr_t) p_end;
 
