@@ -94,16 +94,23 @@ void context_kload(PCB *pcb, void (*entry)(void *), void *arg) {
   pcb->cp = context;
 }
 
+#define NR_PAGE 8
+#ifdef STACK_SIZE
+#undef STACK_SIZE
+#define STACK_SIZE NR_PAGE * PGSIZE
+#endif
 extern Area heap;
 void context_uload(PCB *pcb, const char *filename, char *const argv[], char *const envp[]) {
   /* load the user program and get the entry */
   void (*entry)(void *) = (void (*)(void *)) loader(pcb, filename); 
-  /* create context in kernal stack */
+  /* create context in kernel stack */
   Area kstack = RANGE(pcb->stack, pcb->stack + STACK_SIZE);
   Context *context = ucontext(NULL, kstack, entry);
+  /* apply for new stack memeory */
+  void *end = (void *) ((char *) new_page(NR_PAGE) + STACK_SIZE);
   /* set the passed arguments and environment variables */
   int argc = 0;
-  char *last_end = (char *) heap.end, *start;
+  char *last_end = (char *) end, *start;
   while (argv[argc] != NULL) {
     size_t len = strlen(argv[argc]) + 1; // plus 1 for `\0`
     start = (char *) last_end - len;

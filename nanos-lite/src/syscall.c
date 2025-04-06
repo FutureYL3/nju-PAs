@@ -26,6 +26,10 @@ struct timezone {
 int brk(void *addr);
 int gettimeofday(struct timeval *tv, struct timezone *tz);
 void naive_uload(PCB *pcb, const char *filename);
+void context_uload(PCB *pcb, const char *filename, char *const argv[], char *const envp[]);
+void switch_boot_pcb();
+
+extern PCB* current;
 
 void do_syscall(Context *c) {
   uintptr_t a[4];
@@ -81,7 +85,10 @@ void do_syscall(Context *c) {
       // while (*path != '=')  ++path;
       // ++path;
       // sprintf(absolut_path, "%s/%s", path, (const char *) a[1]);
-      naive_uload(NULL, (const char *) a[1]);
+      // naive_uload(NULL, (const char *) a[1]);
+      context_uload(current, (const char *) a[1], (char *const *) a[2], (char *const *) a[3]);
+      switch_boot_pcb();
+      yield();
       // free(absolut_path);
       break;
     }

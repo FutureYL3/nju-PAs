@@ -25,17 +25,16 @@ void hello_fun(void *arg) {
 }
 
 void init_proc() {
+  Log("Initializing processes...");
 
-  context_kload(&pcb[0], hello_fun, "hello_fun 1");
+  // load program here
+  // context_kload(&pcb[0], hello_fun, "hello_fun 1");
   // context_uload(&pcb[0], "/bin/hello");
-  char *const argv[] = {"--skip", NULL};
+  char *const argv[] = {NULL};
   char *const envp[] = {NULL};
-  context_uload(&pcb[1], "/bin/pal", argv, envp);
+  context_uload(&pcb[1], "/bin/exec-test", argv, envp);
   switch_boot_pcb();
-
-  // Log("Initializing processes...");
-
-  // // load program here
+  
 	// naive_uload(NULL, "/bin/nterm");
 }
 
