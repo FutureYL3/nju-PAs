@@ -63,7 +63,6 @@ void _exit(int status) {
   // printf("exit with status %d, now jump to nterm\n", status);
   /* we make argv and envp both NULL to tell the kernel we need to reload nterm */
   /* normally, a process cannot invoke sys_execve with argv and envp both NULL */
-  printf("here");
   _syscall_(SYS_execve, (intptr_t) START_PROGRAM, (intptr_t) NULL, (intptr_t) NULL);
   
   /* should not reach here */
@@ -110,6 +109,7 @@ int _execve(const char *fname, char * const argv[], char *const envp[]) {
   // printf("%s\n", fname);
   // printf("%s\n", argv[1]);
   // printf("%s\n", *envp);
+  printf("here");
   int ret = _syscall_(SYS_execve, (intptr_t) fname, (intptr_t) argv, (intptr_t) envp);
   if (ret < 0) {
     errno = -ret;
