@@ -122,7 +122,7 @@ static void sh_handle_cmd(const char *cmd) {
     for (i = 0; i < NR_FILE; ++ i) {
       char *name = file_list[i].file_name;
       name += 5; // 跳过 /bin/
-      char **argv = (char **) malloc(10 * sizeof(char *)); // 10 arguments should be enough
+      char **argv = (char **) calloc(10, sizeof(char *)); // 10 arguments should be enough
       if (strcmp(name, command) == 0) {
         int count = 0;
         argv[count++] = strdup(file_list[i].file_name);
