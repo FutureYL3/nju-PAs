@@ -81,9 +81,9 @@ void do_syscall(Context *c) {
       char *const *u_argv = (char *const *) a[2];
       char *const *u_envp = (char *const *) a[3];
 
-      // printf("%p\n", u_filename);
-      // printf("%p\n", u_argv);
-      // printf("%p\n", u_envp);
+      printf("%s\n", u_filename);
+      printf("%p\n", u_argv);
+      printf("%p\n", u_envp);
 
       // check whether the file exist
       if (fs_open(u_filename, 0, 0) < 0) {
