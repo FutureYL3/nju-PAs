@@ -152,6 +152,7 @@ static void sh_handle_cmd(const char *cmd) {
           }
           
           // 保存参数
+          printf("%s\n", arg_start);
           argv[count++] = arg_start;
         }
         argv[count] = NULL;
