@@ -113,7 +113,7 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   void *end = (void *) ((char *) new_page(NR_PAGE) + STACK_SIZE);
   // printf("end is %p\n", (char *) end);
   /* set the passed arguments and environment variables */
-  printf("%p\n", filename);
+  printf("%s\n", filename);
   printf("%p\n", *argv);
   printf("%p\n", *envp);
   int argc = 0;
