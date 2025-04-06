@@ -113,8 +113,8 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   int argc = 0;
   char *last_end = (char *) end, *start;
   while (argv[argc] != NULL) {
+    
     size_t len = strlen(argv[argc]) + 1; // plus 1 for `\0`
-    printf("%d\n", len);
     start = (char *) last_end - len;
     memcpy(start, argv[argc], len);
     last_end = start;
@@ -124,7 +124,6 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   int envc = 0;
   while (envp[envc] != NULL) {
     size_t len = strlen(envp[envc]) + 1; // plus 1 for `\0`
-    printf("%d\n", len);
     start = (char *) last_end - len;
     memcpy(start, envp[envc], len);
     last_end = start;
