@@ -102,7 +102,6 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   Area kstack = RANGE(pcb->stack, pcb->stack + STACK_SIZE);
   Context *context = ucontext(NULL, kstack, entry);
   /* set the passed arguments and environment variables */
-  /* TODO: consider argv and envp may be NULL */
   int argc = 0;
   char *last_end = (char *) heap.end, *start;
   while (argv[argc] != NULL) {
