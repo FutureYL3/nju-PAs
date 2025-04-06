@@ -100,6 +100,7 @@ void context_kload(PCB *pcb, void (*entry)(void *), void *arg) {
 #define STACK_SIZE NR_PAGE * PGSIZE
 #endif
 extern Area heap;
+/* make sure that the argv[0] is always executed filename, this is ensured by caller */
 void context_uload(PCB *pcb, const char *filename, char *const argv[], char *const envp[]) {
   /* load the user program and get the entry */
   void (*entry)(void *) = (void (*)(void *)) loader(pcb, filename); 
