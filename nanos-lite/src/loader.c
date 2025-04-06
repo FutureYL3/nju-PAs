@@ -111,15 +111,15 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   Context *context = ucontext(NULL, kstack, entry);
   /* apply for new stack memeory */
   void *end = (void *) ((char *) new_page(NR_PAGE) + STACK_SIZE);
-  printf("end is %p\n", (char *) end);
+  // printf("end is %p\n", (char *) end);
   /* set the passed arguments and environment variables */
-  printf("%p\n", filename);
-  printf("%p\n", *argv);
-  printf("%p\n", *envp);
+  // printf("%p\n", filename);
+  // printf("%p\n", *argv);
+  // printf("%p\n", *envp);
   int argc = 0;
   char *last_end = (char *) end, *start;
   while (argv[argc] != NULL) {
-    printf("address of %s: %p\n", argv[argc], argv[argc]);
+    // printf("address of %s: %p\n", argv[argc], argv[argc]);
     size_t len = strlen(argv[argc]) + 1; // plus 1 for `\0`
     start = (char *) last_end - len;
     memcpy(start, argv[argc], len);
