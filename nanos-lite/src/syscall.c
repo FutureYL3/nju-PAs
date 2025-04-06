@@ -83,7 +83,7 @@ void do_syscall(Context *c) {
 
       // check whether the file exist
       if (fs_open(u_filename, 0, 0) < 0) {
-        c->GPRx = -1;
+        c->GPRx = -2;
         break;
       }
 
