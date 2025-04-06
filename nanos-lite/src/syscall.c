@@ -104,8 +104,8 @@ void do_syscall(Context *c) {
       int envc = 0;
 
       // --- (可选但推荐) 基本的指针有效性检查 ---
-      if (!u_filename || !u_argv || !u_envp) {
-        Log("Execve error: received NULL pointer for filename, argv, or envp.");
+      if (!u_filename) {
+        Log("Execve error: received NULL pointer for filename.");
         c->GPRx = -1; // 设置错误返回值
         break;        // 退出 syscall 处理
       }
@@ -120,56 +120,80 @@ void do_syscall(Context *c) {
       }
       strcpy(k_filename, u_filename);
 
-      // --- 2. 复制 argv ---
-      for (argc = 0; argc < K_MAX_ARGS; ++argc) {
-        char *u_arg = u_argv[argc]; // 获取用户空间的 argv 指针
-        if (u_arg == NULL) {
-          break; // 用户 argv 结束
+      // --- 检查是否是由 _exit 发起的特殊 "reload nterm" 情况 ---
+      if (u_argv == NULL && u_envp == NULL && strcmp(k_filename, "/bin/nterm") == 0) {
+          Log("Execve: 检测到来自 _exit 的 /bin/nterm 特殊重载请求。");
+          // 内核内部生成 nterm 的默认参数/环境
+          strcpy(k_argv_storage[0], "/bin/nterm");
+          k_argv[0] = k_argv_storage[0];
+          argc = 1;
+          k_argv[argc] = NULL; // 结束 argv
+
+          // 这种情况下不需要环境变量
+          envc = 0;
+          k_envp[envc] = NULL; // 结束 envp
+      }
+      else {
+        // --- 正常的 execve 情况：从用户空间复制 argv 和 envp ---
+        // (将之前复制参数/环境的逻辑放在这里)
+        // 在继续之前检查 u_argv 或 u_envp 是否为 NULL
+        if (!u_argv || !u_envp) {
+          Log("Execve error: receive NULL argv and envp pointer in normal situation.");
+          c->GPRx = -1; // 设置错误返回值
+          break;        // 退出 syscall 处理
         }
 
-        len = strlen(u_arg); // 获取用户参数长度 (风险点)
-        if (len >= K_STR_LEN) {
-          Log("Execve error: argument %d too long (max %d).", argc, K_STR_LEN - 1);
+        // --- 2. 复制 argv ---
+        for (argc = 0; argc < K_MAX_ARGS; ++argc) {
+          char *u_arg = u_argv[argc]; // 获取用户空间的 argv 指针
+          if (u_arg == NULL) {
+            break; // 用户 argv 结束
+          }
+
+          len = strlen(u_arg); // 获取用户参数长度 (风险点)
+          if (len >= K_STR_LEN) {
+            Log("Execve error: argument %d too long (max %d).", argc, K_STR_LEN - 1);
+            c->GPRx = -1;
+            break;
+          }
+
+          // 复制字符串到内核存储区 k_argv_storage[argc]
+          strcpy(k_argv_storage[argc], u_arg);
+          // 将指向内核存储区字符串的指针存入内核指针数组 k_argv[argc]
+          k_argv[argc] = k_argv_storage[argc];
+        }
+        // 检查是否因为参数过多而退出循环
+        if (argc == K_MAX_ARGS && u_argv[argc] != NULL) {
+          Log("Execve error: too many arguments (limit %d).", K_MAX_ARGS);
           c->GPRx = -1;
           break;
         }
+        k_argv[argc] = NULL; // 正确地用 NULL 终止内核指针数组
 
-        // 复制字符串到内核存储区 k_argv_storage[argc]
-        strcpy(k_argv_storage[argc], u_arg);
-        // 将指向内核存储区字符串的指针存入内核指针数组 k_argv[argc]
-        k_argv[argc] = k_argv_storage[argc];
-      }
-      // 检查是否因为参数过多而退出循环
-      if (argc == K_MAX_ARGS && u_argv[argc] != NULL) {
-        Log("Execve error: too many arguments (limit %d).", K_MAX_ARGS);
-        c->GPRx = -1;
-        break;
-      }
-      k_argv[argc] = NULL; // 正确地用 NULL 终止内核指针数组
+        // --- 3. 复制 envp (逻辑同 argv) ---
+        for (envc = 0; envc < K_MAX_ENVS; ++envc) {
+          char *u_env = u_envp[envc];
+          if (u_env == NULL) {
+            break;
+          }
 
-      // --- 3. 复制 envp (逻辑同 argv) ---
-      for (envc = 0; envc < K_MAX_ENVS; ++envc) {
-        char *u_env = u_envp[envc];
-        if (u_env == NULL) {
-          break;
+          len = strlen(u_env);
+          if (len >= K_STR_LEN) {
+            Log("Execve error: environment variable %d too long (max %d).", envc, K_STR_LEN - 1);
+            c->GPRx = -1;
+            break;
+          }
+
+          strcpy(k_envp_storage[envc], u_env);
+          k_envp[envc] = k_envp_storage[envc];
         }
-
-        len = strlen(u_env);
-        if (len >= K_STR_LEN) {
-          Log("Execve error: environment variable %d too long (max %d).", envc, K_STR_LEN - 1);
+        if (envc == K_MAX_ENVS && u_envp[envc] != NULL) {
+          Log("Execve error: too many environment variables (limit %d).", K_MAX_ENVS);
           c->GPRx = -1;
           break;
         }
-
-        strcpy(k_envp_storage[envc], u_env);
-        k_envp[envc] = k_envp_storage[envc];
+        k_envp[envc] = NULL; // 正确地用 NULL 终止内核指针数组
       }
-      if (envc == K_MAX_ENVS && u_envp[envc] != NULL) {
-        Log("Execve error: too many environment variables (limit %d).", K_MAX_ENVS);
-        c->GPRx = -1;
-        break;
-      }
-      k_envp[envc] = NULL; // 正确地用 NULL 终止内核指针数组
 
 
       // --- 4. 使用正确的内核指针数组调用 context_uload ---
