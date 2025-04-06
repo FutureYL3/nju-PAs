@@ -85,9 +85,9 @@ void do_syscall(Context *c) {
       // ++path;
       // sprintf(absolut_path, "%s/%s", path, (const char *) a[1]);
       // naive_uload(NULL, (const char *) a[1]);
-      printf("1\n");
+      // printf("1\n");
       context_uload(current, (const char *) a[1], (char *const *) a[2], (char *const *) a[3]);
-      printf("2\n");
+      // printf("2\n");
       switch_boot_pcb();
       yield();
       // free(absolut_path);
