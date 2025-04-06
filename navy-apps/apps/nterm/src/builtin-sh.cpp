@@ -120,7 +120,46 @@ static void sh_handle_cmd(const char *cmd) {
     for (int i = 0; i < NR_FILE; ++ i) {
       char *name = file_list[i].file_name;
       name += 5; // 跳过 /bin/
-      if (strcmp(name, command) == 0)  execvp(command, NULL);
+      char *argv[10] = { }; // 10 arguments should be enough
+      if (strcmp(name, command) == 0) {
+        int count = 0;
+        argv[count++] = file_list[i].file_name;
+        while (*p) {
+          // 跳过参数之间的空格
+          while (*p && isspace(*p))  p++;
+          if (!*p)  break;
+          
+          char *arg_start = p;
+          char *arg_end = p;
+          
+          // 处理带引号的参数
+          if (*p == '"') {
+            p++; // 跳过开始引号
+            arg_start = p;
+            
+            // 查找结束引号
+            while (*p && *p != '"')  p++;
+            if (*p == '"') {
+              arg_end = p;
+              *p++ = '\0'; // 替换引号为字符串结束符
+            }
+          } else {
+            // 处理普通参数（无引号）
+            while (*p && !isspace(*p)) p++;
+            arg_end = p;
+            if (*p) *p++ = '\0';
+          }
+          
+          // 保存参数
+          if (!first_arg) sh_printf(" ");
+          sh_printf("%s", arg_start);
+          first_arg = false;
+
+          argv[count++] = arg_start;
+        }
+        argv[count] = NULL;
+        execvp(command, argv);
+      }
     }
     // execve(command, NULL, environ);
     // execvp(command, NULL);
