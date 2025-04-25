@@ -67,15 +67,6 @@ void __am_switch(Context *c) {
 }
 
 #define PTESIZE 4
-#define PTE_V (1UL << 0)
-#define PTE_R (1UL << 1)
-#define PTE_W (1UL << 2)
-#define PTE_X (1UL << 3)
-#define PTE_U (1UL << 4)
-#define PTE_G (1UL << 5)
-#define PTE_A (1UL << 6)
-#define PTE_D (1UL << 7)
-
 
 void map(AddrSpace *as, void *va, void *pa, int prot) {
   /* get the address of the page directory entry */
@@ -86,21 +77,21 @@ void map(AddrSpace *as, void *va, void *pa, int prot) {
     /* create the second level page table of this page dir entry */
     void *pgtable = pgalloc_usr(PGSIZE);
     /* set this page dir entry points to the second level page table, and set neccessary status bits, left r,w,x all 0 to indicate that this entry is not leaf */
-    *pgdir_entry_val = (uint32_t) pgtable >> 12 << 10 | PTE_V;
+    *pgdir_entry_val = (uint32_t) ((uintptr_t) pgtable >> 12 << 10 | PTE_V);
     /* get the second level page table entry, 0x003ff is identical to 00000000001111111111*/
     void *pgtable_entry = pgtable + (((uintptr_t) va >> 12) & 0x003ff) * PTESIZE;
     /* get the value of second level page table entry */
     uint32_t *pgtable_entry_val = (uint32_t *) pgtable_entry;
     /* set second level page table entry points to the real physical page, and set default prot */
-    *pgtable_entry_val = (uint32_t) pa >> 12 << 10 | PTE_V | PTE_R | PTE_W | PTE_X;
+    *pgtable_entry_val = (uint32_t) ((uintptr_t) pa >> 12 << 10 | PTE_V | PTE_R | PTE_W | PTE_X);
   }
   else if ((*pgdir_entry_val & PTE_R) == 0 && (*pgdir_entry_val & PTE_W) == 0 && (*pgdir_entry_val & PTE_X) == 0) {
     /* get the second level page table entry, 0x003ff is identical to 00000000001111111111*/
-    void *pgtable_entry = (*((uint32_t *) pgdir_entry) >> 10 << 12) + (((uintptr_t) va >> 12) & 0x003ff) * PTESIZE;
+    void *pgtable_entry = (void *) ((*((uint32_t *) pgdir_entry) >> 10 << 12) + (((uintptr_t) va >> 12) & 0x003ff) * PTESIZE);
     /* get the value of second level page table entry */
     uint32_t *pgtable_entry_val = (uint32_t *) pgtable_entry;
     /* set second level page table entry points to the real physical page, and set default prot */
-    *pgtable_entry_val = (uint32_t) pa >> 12 << 10 | PTE_V | PTE_R | PTE_W | PTE_X;
+    *pgtable_entry_val = (uint32_t) ((uintptr_t) pa >> 12 << 10 | PTE_V | PTE_R | PTE_W | PTE_X);
   }
 }
 
