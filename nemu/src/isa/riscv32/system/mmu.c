@@ -29,6 +29,7 @@
 
 paddr_t isa_mmu_translate(vaddr_t vaddr, int len, int type) {
   uint32_t page_dir_pa = cpu.satp << 12;
+  printf("0x%x\n", page_dir_pa);
   void *page_dir_ptr = (void *)(uintptr_t) page_dir_pa;
   void *pte = page_dir_ptr + (vaddr >> 22) * PTESIZE;
   uint32_t pte_val = paddr_read((paddr_t)(uintptr_t) pte, 4);
