@@ -80,8 +80,11 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
       // printf("vmem_addr = %p, offset = %x, filesz = %x, memsz = %x\n", vmem_addr, offset, filesz, memsz);
 		}
 	}
+  printf("4\n");
 
   fs_close(fd);
+
+  printf("5\n");
 
 	return (uintptr_t) ehdr.e_entry;	
 }
