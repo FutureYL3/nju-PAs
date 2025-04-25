@@ -28,12 +28,15 @@ extern char ramdisk_end[];
 static uintptr_t loader(PCB *pcb, const char *filename) {
   /* we do not use flags and mode */
 	int fd = fs_open(filename, 0, 0);
+  printf("1\n");
   // printf("get fd = %d\n", fd);
 	/* get ELF header */
   Elf_Ehdr ehdr = {};
   if (fs_read(fd, &ehdr, sizeof(Elf_Ehdr)) < 0) {
     panic("Failed to load program %s because can't open file", filename);
   }
+  
+  printf("2\n");
 
 	/* check for magic number */
 	assert(*(uint32_t *)ehdr.e_ident == 0x464c457f); // for little endian check
@@ -45,6 +48,8 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
 	uint32_t phoff = ehdr.e_phoff;
   /* set file open offset to phoff */
   fs_lseek(fd, phoff, SEEK_SET);
+  
+  printf("3\n");
   // printf("get phnum = %x, phoff = %x\n", phnum, phoff);
 
 	// Elf_Phdr * phdr_table = (Elf_Phdr *) ((char *) &ramdisk_start + phoff);

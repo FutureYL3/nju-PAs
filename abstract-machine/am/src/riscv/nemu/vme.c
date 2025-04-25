@@ -78,7 +78,7 @@ void map(AddrSpace *as, void *va, void *pa, int prot) {
     void *pgtable = pgalloc_usr(PGSIZE);
     /* set this page dir entry points to the second level page table, and set neccessary status bits, left r,w,x all 0 to indicate that this entry is not leaf */
     *pgdir_entry_val = (uint32_t) ((uintptr_t) pgtable >> 12 << 10 | PTE_V);
-    printf("%d\n", *pgdir_entry_val & PTE_V);
+    // printf("%d\n", *pgdir_entry_val & PTE_V);
     /* get the second level page table entry, 0x003ff is identical to 00000000001111111111*/
     void *pgtable_entry = pgtable + (((uintptr_t) va >> 12) & 0x003ff) * PTESIZE;
     /* get the value of second level page table entry */
