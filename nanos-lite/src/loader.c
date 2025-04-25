@@ -55,10 +55,12 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
 	// Elf_Phdr * phdr_table = (Elf_Phdr *) ((char *) &ramdisk_start + phoff);
 	for (int i = 0; i < phnum; ++ i) {
     fs_lseek(fd, phoff + i * sizeof(Elf_Phdr), SEEK_SET);
+    printf("4\n");
 		Elf_Phdr phdr = {};
     if (fs_read(fd, &phdr, sizeof(phdr)) != sizeof(phdr)) {
       panic("Failed to load program %s because can't read segment head %d", filename, i);
     }
+    printf("5\n");
 		if (phdr.p_type == PT_LOAD) {
 			void * vmem_addr = (void *) phdr.p_vaddr;
 			size_t offset = phdr.p_offset;
@@ -67,24 +69,25 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
       char *buf = (char *) malloc(filesz);
       // char buf[filesz];
       fs_lseek(fd, offset, SEEK_SET);
+      printf("6\n");
       if (fs_read(fd, (void *) buf, filesz) != filesz) {
         panic("Failed to load program %s because can't read total segment %d to buffer", filename, i);
       }
+      printf("7\n");
       memcpy(vmem_addr, (void *) buf, filesz);
+      printf("8\n");
       // free(buf);
 			// ramdisk_read(vmem_addr, offset, filesz);
 			if (memsz > filesz) {
 				void *fileend = (void *) ((char *) vmem_addr + filesz);
 				memset(fileend, 0, memsz - filesz);
+        printf("9\n");
 			}
       // printf("vmem_addr = %p, offset = %x, filesz = %x, memsz = %x\n", vmem_addr, offset, filesz, memsz);
 		}
 	}
-  printf("4\n");
 
   fs_close(fd);
-
-  printf("5\n");
 
 	return (uintptr_t) ehdr.e_entry;	
 }
