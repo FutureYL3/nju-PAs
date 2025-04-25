@@ -17,13 +17,49 @@
 #include <memory/paddr.h>
 
 word_t vaddr_ifetch(vaddr_t addr, int len) {
-  return paddr_read(addr, len);
+  word_t ret;
+  switch (isa_mmu_check(addr, len, MEM_TYPE_IFETCH)) {
+    case MMU_DIRECT: {
+      ret = paddr_read(addr, len);
+    }
+    case MMU_TRANSLATE: {
+      ret = paddr_read(isa_mmu_translate(addr, len, MEM_TYPE_IFETCH), len);
+    }
+    case MMU_FAIL: {
+      panic("MMU_FAIL");
+    }
+  }
+  
+  return ret;
 }
 
 word_t vaddr_read(vaddr_t addr, int len) {
-  return paddr_read(addr, len);
+  word_t ret;
+  switch (isa_mmu_check(addr, len, MEM_TYPE_READ)) {
+    case MMU_DIRECT: {
+      ret = paddr_read(addr, len);
+    }
+    case MMU_TRANSLATE: {
+      ret = paddr_read(isa_mmu_translate(addr, len, MEM_TYPE_READ), len);
+    }
+    case MMU_FAIL: {
+      panic("MMU_FAIL");
+    }
+  }
+  
+  return ret;
 }
 
 void vaddr_write(vaddr_t addr, int len, word_t data) {
-  paddr_write(addr, len, data);
+  switch (isa_mmu_check(addr, len, MEM_TYPE_WRITE)) {
+    case MMU_DIRECT: {
+      paddr_write(addr, len, data);
+    }
+    case MMU_TRANSLATE: {
+      paddr_write(isa_mmu_translate(addr, len, MEM_TYPE_WRITE), len, data);
+    }
+    case MMU_FAIL: {
+      panic("MMU_FAIL");
+    }
+  }
 }

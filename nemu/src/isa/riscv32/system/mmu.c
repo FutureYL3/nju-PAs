@@ -17,6 +17,28 @@
 #include <memory/paddr.h>
 #include <memory/vaddr.h>
 
+#define PTESIZE 4
+#define PTE_V (1UL << 0)
+#define PTE_R (1UL << 1)
+#define PTE_W (1UL << 2)
+#define PTE_X (1UL << 3)
+#define PTE_U (1UL << 4)
+#define PTE_G (1UL << 5)
+#define PTE_A (1UL << 6)
+#define PTE_D (1UL << 7)
+
 paddr_t isa_mmu_translate(vaddr_t vaddr, int len, int type) {
-  return MEM_RET_FAIL;
+  uint32_t page_dir_pa = cpu.satp << 12;
+  void *page_dir_ptr = (void *)(uintptr_t) page_dir_pa;
+  void *pte = page_dir_ptr + (vaddr >> 22) * PTESIZE;
+  Assert((*(uint32_t *) pte & PTE_V) == 1, "pte is not valid\n");
+  Assert((*(uint32_t *) pte & PTE_R) == 0 && (*(uint32_t *) pte & PTE_W) == 0 && (*(uint32_t *) pte & PTE_X) == 0, "page dir entry does not points to the second level page table\n");
+  uint32_t page_table_pa = *(uint32_t *) pte >> 10 << 12;
+  void *page_table_ptr = (void *)(uintptr_t) page_table_pa;
+  pte = page_table_ptr + ((vaddr >> 12) & 0x003ff) * PTESIZE;
+  Assert((*(uint32_t *) pte & PTE_V) == 1, "pte is not valid\n");
+  Assert(!((*(uint32_t *) pte & PTE_R) == 0 && (*(uint32_t *) pte & PTE_W) == 0 && (*(uint32_t *) pte & PTE_X) == 0), "page tale entry is not a leaf pte\n");
+  paddr_t ret = (*(uint32_t *) pte >> 10 << 12) | (vaddr & 0x00000fff);
+  Assert(ret == vaddr, "va != pa\n");
+  return ret;
 }
