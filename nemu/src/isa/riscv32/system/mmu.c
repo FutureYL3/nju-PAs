@@ -36,7 +36,8 @@ paddr_t isa_mmu_translate(vaddr_t vaddr, int len, int type) {
   /* get pte's value */
   uint32_t pte_val = paddr_read(pte_pa, 4);
   Assert((pte_val & PTE_V) == 1, "pte is not valid, pte value: 0x%x\n", pte_val);
-  Assert((pte_val & PTE_R) == 0 && (pte_val & PTE_W) == 0 && (pte_val & PTE_X) == 0, "page dir entry does not points to the second level page table, pte value: 0x%x\n", pte_val);
+  Assert((pte_val & PTE_R) == 0 && (pte_val & PTE_W) == 0 && (pte_val & PTE_X) == 0, 
+    "page dir entry does not points to the second level page table, pte value: 0x%x, vaddr value: 0x%x\n", pte_val, vaddr);
   /* get second page table address */
   paddr_t page_table_pa = pte_val >> 10 << 12;
   /* get the corresponding pte address */
@@ -44,7 +45,8 @@ paddr_t isa_mmu_translate(vaddr_t vaddr, int len, int type) {
   /* get pte's value */
   pte_val = paddr_read(pte_pa, 4);
   Assert((pte_val & PTE_V) == 1, "pte is not valid, pte value: 0x%x\n", pte_val);
-  Assert(!((pte_val & PTE_R) == 0 && (pte_val & PTE_W) == 0 && (pte_val & PTE_X) == 0), "page tale entry is not a leaf pte, pte value: 0x%x\n", pte_val);
+  Assert(!((pte_val & PTE_R) == 0 && (pte_val & PTE_W) == 0 && (pte_val & PTE_X) == 0), 
+    "page tale entry is not a leaf pte, pte value: 0x%x\n", pte_val);
   /* get the translated physical address */
   paddr_t ret = (pte_val >> 10 << 12) | (vaddr & 0x00000fff);
   Assert(ret == vaddr, "va != pa\n");
