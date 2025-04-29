@@ -67,34 +67,35 @@ void __am_switch(Context *c) {
   }
 }
 
-#define PTESIZE 4
+#define PTESIZE   4
+#define PPN_MASK  ((1u << 22) - 1)    // 22 位 PPN 掩码
 
 void map(AddrSpace *as, void *va, void *pa, int prot) {
-  /* get the address of the page directory entry */
-  void *pgdir_entry = as->ptr + ((uintptr_t) va >> 22) * PTESIZE;
-  /* get the value of the page directory entry */
-  uint32_t *pgdir_entry_val = (uint32_t *) pgdir_entry;
-  if ((*pgdir_entry_val & PTE_V) == 0) {  // indicates that the second level page table is not created yet
-    /* create the second level page table of this page dir entry */
-    void *pgtable = pgalloc_usr(PGSIZE);
-    /* set this page dir entry points to the second level page table, and set neccessary status bits, left r,w,x all 0 to indicate that this entry is not leaf */
-    *pgdir_entry_val = (uint32_t) ((uintptr_t) pgtable >> 12 << 10 | PTE_V);
-    // printf("%d\n", *pgdir_entry_val & PTE_V);
-    /* get the second level page table entry, 0x003ff is identical to 00000000001111111111*/
-    void *pgtable_entry = pgtable + (((uintptr_t) va >> 12) & 0x003ff) * PTESIZE;
-    /* get the value of second level page table entry */
-    uint32_t *pgtable_entry_val = (uint32_t *) pgtable_entry;
-    /* set second level page table entry points to the real physical page, and set default prot */
-    *pgtable_entry_val = (uint32_t) ((uintptr_t) pa >> 12 << 10 | PTE_V | PTE_R | PTE_W | PTE_X);
+  // 1) 计算一级页表索引、PDE 地址
+  uint32_t idx1 = (uintptr_t) va >> 22;
+  uint32_t *pgdir = (uint32_t *) as->ptr;
+  uint32_t *pde   = &(pgdir[idx1]);
+
+  // 2) 如果还没创建二级页表，就分配并安装一个新的
+  if (!(*pde & PTE_V)) {
+    void *new_pt = pgalloc_usr(PGSIZE);
+    uint32_t ppn  = ((uintptr_t) new_pt >> 12) & PPN_MASK;
+    *pde = (ppn << 10) | PTE_V;   // 只标记 valid，R/W/X 都留 0
   }
-  else if ((*pgdir_entry_val & PTE_R) == 0 && (*pgdir_entry_val & PTE_W) == 0 && (*pgdir_entry_val & PTE_X) == 0) {
-    /* get the second level page table entry, 0x003ff is identical to 00000000001111111111*/
-    void *pgtable_entry = (void *) ((*((uint32_t *) pgdir_entry) >> 10 << 12) + (((uintptr_t) va >> 12) & 0x003ff) * PTESIZE);
-    /* get the value of second level page table entry */
-    uint32_t *pgtable_entry_val = (uint32_t *) pgtable_entry;
-    /* set second level page table entry points to the real physical page, and set default prot */
-    *pgtable_entry_val = (uint32_t) ((uintptr_t) pa >> 12 << 10 | PTE_V | PTE_R | PTE_W | PTE_X);
-  }
+
+  // 3) 无论是刚刚创建，还是原本就有，都要取出二级页表物理基址
+  uint32_t raw_pde = *pde;
+  //   ——先右移 10 丢掉权限位，再掩码，只留下面22位
+  uint32_t pd_ppn  = (raw_pde >> 10) & PPN_MASK;
+  uint32_t *pt     = (uint32_t *)(pd_ppn << 12);
+
+  // 4) 计算二级页表索引、PTE 地址
+  uint32_t idx2 = ((uintptr_t) va >> 12) & 0x3ff;
+  uint32_t *pte = &(pt[idx2]);
+
+  // 5) 安装最终的叶子 PTE：先掩码再移位
+  uint32_t ppn_pa = ((uintptr_t) pa >> 12) & PPN_MASK;
+  *pte = (ppn_pa << 10) | PTE_V | PTE_R | PTE_W | PTE_X;
 }
 
 Context *ucontext(AddrSpace *as, Area kstack, void *entry) {

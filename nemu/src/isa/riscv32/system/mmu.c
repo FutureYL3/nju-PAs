@@ -17,7 +17,6 @@
 #include <memory/paddr.h>
 #include <memory/vaddr.h>
 
-#define PTESIZE 4
 #define PTE_V (1UL << 0)
 #define PTE_R (1UL << 1)
 #define PTE_W (1UL << 2)
@@ -27,28 +26,39 @@
 #define PTE_A (1UL << 6)
 #define PTE_D (1UL << 7)
 
+#define PTESIZE   4
+#define PPN_MASK  ((1u << 22) - 1)
+
 paddr_t isa_mmu_translate(vaddr_t vaddr, int len, int type) {
-  /* get page table directory address */
-  uint32_t root_ppn = cpu.satp & 0x003fffff;   // 22 bit
-  paddr_t page_dir_pa = (paddr_t) root_ppn << 12;
-  /* get the corresponding pte address */
-  paddr_t pte_pa = page_dir_pa + (vaddr >> 22) * PTESIZE;
-  /* get pte's value */
-  uint32_t pte_val = paddr_read(pte_pa, 4);
-  Assert((pte_val & PTE_V) == 1, "pte is not valid, pte value: 0x%x\n", pte_val);
-  Assert((pte_val & PTE_R) == 0 && (pte_val & PTE_W) == 0 && (pte_val & PTE_X) == 0, 
-    "page dir entry does not points to the second level page table, pte value: 0x%x, vaddr value: 0x%x\n", pte_val, vaddr);
-  /* get second page table address */
-  paddr_t page_table_pa = pte_val >> 10 << 12;
-  /* get the corresponding pte address */
-  pte_pa = page_table_pa + ((vaddr >> 12) & 0x003ff) * PTESIZE;
-  /* get pte's value */
-  pte_val = paddr_read(pte_pa, 4);
-  Assert((pte_val & PTE_V) == 1, "pte is not valid, pte value: 0x%x\n", pte_val);
-  Assert(!((pte_val & PTE_R) == 0 && (pte_val & PTE_W) == 0 && (pte_val & PTE_X) == 0), 
-    "page tale entry is not a leaf pte, pte value: 0x%x\n", pte_val);
-  /* get the translated physical address */
-  paddr_t ret = (pte_val >> 10 << 12) | (vaddr & 0x00000fff);
-  Assert(ret == vaddr, "va != pa\n");
-  return ret;
+  // 1) 取出一级页表的物理基址
+  uint32_t root_ppn    = cpu.satp & PPN_MASK;       // 只保留低 22 位
+  paddr_t page_dir_pa  = (paddr_t) root_ppn << 12;   // <<12 得到字节地址
+
+  // 2) 计算一级页表（PDE）所在的物理地址，并读取它
+  uint32_t idx1        = vaddr >> 22;               // 虚拟地址高 10 位
+  paddr_t  pde_pa      = page_dir_pa + idx1 * PTESIZE;
+  uint32_t pde_val     = paddr_read(pde_pa, 4);
+  Assert((pde_val & PTE_V) != 0, "PDE 必须 valid, val=0x%x", pde_val);
+  Assert((pde_val & (PTE_R|PTE_W|PTE_X)) == 0,
+         "PDE 不能带 R/W/X, val=0x%x, va=0x%x", pde_val, vaddr);
+
+  // 3) 从 PDE 中提取二级页表的 PPN→物理基址
+  uint32_t pd_ppn      = (pde_val >> 10) & PPN_MASK; // 【先>>10再掩码】丢权限，只留 22 位
+  paddr_t  page_table_pa = (paddr_t) pd_ppn << 12;    // 恢复成字节地址
+
+  // 4) 计算二级页表（PTE）所在的物理地址，并读取它
+  uint32_t idx2        = (vaddr >> 12) & 0x3ff;      // 中间 10 位
+  paddr_t  pte_pa      = page_table_pa + idx2 * PTESIZE;
+  uint32_t pte_val     = paddr_read(pte_pa, 4);
+  Assert((pte_val & PTE_V) != 0, "PTE 必须 valid, val=0x%x", pte_val);
+  Assert((pte_val & (PTE_R|PTE_W|PTE_X)) != 0,
+         "Leaf PTE 至少带 R/W/X 之一, val=0x%x", pte_val);
+
+  // 5) 从 PTE 中提取物理页帧号，合成最终物理地址
+  uint32_t pt_ppn      = (pte_val >> 10) & PPN_MASK; // 同样先 >>10 再掩码
+  paddr_t  pa_base     = (paddr_t) pt_ppn << 12;     // 页基址
+  paddr_t  pa          = pa_base | (vaddr & 0xfff); // 加上页内偏移
+
+  Assert(pa == vaddr, "直映射下应 va==pa, got pa=0x%x va=0x%x", pa, vaddr);
+  return pa;
 }
