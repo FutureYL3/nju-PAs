@@ -1,10 +1,12 @@
 #include <memory.h>
+#include <common.h>
 
 static void *pf = NULL;
 
 void* new_page(size_t nr_page) {
   void *ret = pf;
   pf = (void *) ((char *) pf + nr_page * PGSIZE);
+  printf("allocated free page from %p to %p\n", (char *) ret, (char *) pf);
   return ret;
 }
 
