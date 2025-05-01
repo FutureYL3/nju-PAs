@@ -28,7 +28,6 @@ extern char ramdisk_end[];
 static uintptr_t loader(PCB *pcb, const char *filename) {
   /* we do not use flags and mode */
 	int fd = fs_open(filename, 0, 0);
-  printf("1\n");
   // printf("get fd = %d\n", fd);
 	/* get ELF header */
   Elf_Ehdr ehdr = {};
@@ -36,8 +35,6 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
     panic("Failed to load program %s because can't open file", filename);
   }
   
-  printf("2\n");
-
 	/* check for magic number */
 	assert(*(uint32_t *)ehdr.e_ident == 0x464c457f); // for little endian check
 	/* check for ISA type */
@@ -49,18 +46,15 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
   /* set file open offset to phoff */
   fs_lseek(fd, phoff, SEEK_SET);
   
-  printf("3\n");
   // printf("get phnum = %x, phoff = %x\n", phnum, phoff);
 
 	// Elf_Phdr * phdr_table = (Elf_Phdr *) ((char *) &ramdisk_start + phoff);
 	for (int i = 0; i < phnum; ++ i) {
     fs_lseek(fd, phoff + i * sizeof(Elf_Phdr), SEEK_SET);
-    printf("4\n");
 		Elf_Phdr phdr = {};
     if (fs_read(fd, &phdr, sizeof(phdr)) != sizeof(phdr)) {
       panic("Failed to load program %s because can't read segment head %d", filename, i);
     }
-    printf("5\n");
 		if (phdr.p_type == PT_LOAD) {
 			void * vmem_addr = (void *) phdr.p_vaddr;
 			size_t offset = phdr.p_offset;
@@ -68,22 +62,18 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
 			size_t memsz = phdr.p_memsz;
       // char *buf = (char *) malloc(filesz);
       char buf[filesz];
-      // memset(buf, 0, filesz);
+      memset(buf, 0, filesz);
       // char buf[filesz];
       fs_lseek(fd, offset, SEEK_SET);
-      printf("6\n");
       if (fs_read(fd, (void *) buf, filesz) != filesz) {
         panic("Failed to load program %s because can't read total segment %d to buffer", filename, i);
       }
-      printf("7\n");
       memcpy(vmem_addr, (void *) buf, filesz);
-      printf("8\n");
       // free(buf);
 			// ramdisk_read(vmem_addr, offset, filesz);
 			if (memsz > filesz) {
 				void *fileend = (void *) ((char *) vmem_addr + filesz);
 				memset(fileend, 0, memsz - filesz);
-        printf("9\n");
 			}
       // printf("vmem_addr = %p, offset = %x, filesz = %x, memsz = %x\n", vmem_addr, offset, filesz, memsz);
 		}
@@ -113,7 +103,7 @@ void context_kload(PCB *pcb, void (*entry)(void *), void *arg) {
 #define STACK_SIZE NR_PAGE * PGSIZE
 #endif
 extern Area heap;
-/* make sure that the argv[0] is always executed filename, this is ensured by caller */
+/* make sure that the argv[0] is always the executed filename, this is ensured by caller */
 void context_uload(PCB *pcb, const char *filename, char *const argv[], char *const envp[]) {
   /* load the user program and get the entry */
   Log("Loading program: %s", filename);
@@ -122,9 +112,9 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   /* create context in kernel stack */
   Area kstack = RANGE(pcb->stack, pcb->stack + STACK_SIZE);
   Context *context = ucontext(NULL, kstack, entry);
-  /* apply for new stack memeory */
+  /* apply for new stack memory */
   void *end = (void *) ((char *) new_page(NR_PAGE) + STACK_SIZE);
-  // printf("end is %p\n", (char *) end);
+  printf("end is %p\n", (char *) end);
   /* set the passed arguments and environment variables */
   // printf("%s\n", filename);
   // printf("%p\n", *argv);
