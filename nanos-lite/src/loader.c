@@ -2,6 +2,7 @@
 #include <elf.h>
 #include <fs.h>
 #include <common.h>
+#include <memory.h>
 
 #ifdef __LP64__
 # define Elf_Ehdr Elf64_Ehdr
@@ -60,8 +61,8 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
 			size_t offset = phdr.p_offset;
 			size_t filesz = phdr.p_filesz;
 			size_t memsz = phdr.p_memsz;
-      // char *buf = (char *) malloc(filesz);
-      char buf[filesz];
+      char *buf = (char *) new_page(filesz / PGSIZE + 1);
+      // char buf[filesz];
       memset(buf, 0, filesz);
       printf("buffer ranges from %p to %p\n", buf, buf + filesz);
       // char buf[filesz];
