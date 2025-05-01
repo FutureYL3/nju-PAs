@@ -63,6 +63,7 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
       // char *buf = (char *) malloc(filesz);
       char buf[filesz];
       memset(buf, 0, filesz);
+      printf("buffer ranges from %p to %p\n", buf, buf + filesz);
       // char buf[filesz];
       fs_lseek(fd, offset, SEEK_SET);
       if (fs_read(fd, (void *) buf, filesz) != filesz) {
