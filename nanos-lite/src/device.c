@@ -79,33 +79,33 @@ size_t fb_write(const void *buf, size_t offset, size_t len) {
 
   uint32_t *p = (uint32_t *) buf;
 
-  // int w = len >> 16;
-  // int h = len & 0xffff;
-  // int written_bytes = w * h * 4;
+  int w = len >> 16;
+  int h = len & 0xffff;
+  int written_bytes = w * h * 4;
 
   // printf("in fb_write, w is %d and h = %d\n", w, h);
 
   /* updated: remove this feature */
-  size_t fb_size = screen_w * screen_h * 4;
-  if (offset + len > fb_size) {
-    Log("offset plus len exceeds frame buffer size in fb_write, just write to the remain space");
-    len = fb_size - offset;
-  }
+  // size_t fb_size = screen_w * screen_h * 4;
+  // if (offset + len > fb_size) {
+  //   Log("offset plus len exceeds frame buffer size in fb_write, just write to the remain space");
+  //   len = fb_size - offset;
+  // }
 
-  // AM_GPU_FBDRAW_T ctl = {
-  //   .x = x, 
-  //   .y = y,
-  //   .pixels = (void *) p,
-  //   .h = h,
-  //   .w = w,
-  //   .sync = true
-  // };
+  AM_GPU_FBDRAW_T ctl = {
+    .x = x, 
+    .y = y,
+    .pixels = (void *) p,
+    .h = h,
+    .w = w,
+    .sync = true
+  };
 
   // /* we don't use io_write for readability */
-  // ioe_write(AM_GPU_FBDRAW, &ctl);
+  ioe_write(AM_GPU_FBDRAW, &ctl);
 
-  // return written_bytes;
-  size_t pixels_to_write = len / 4;
+  return written_bytes;
+  // size_t pixels_to_write = len / 4;
 
   // while (x + pixels_to_write > screen_w) {
   //   size_t write_len = screen_w - x;
@@ -125,17 +125,17 @@ size_t fb_write(const void *buf, size_t offset, size_t len) {
   //   p += write_len;
   // }
   /* we assume the write will not cross line */
-  AM_GPU_FBDRAW_T ctl = {
-    .x = x, 
-    .y = y, 
-    .pixels = (void *) p,
-    .h = 1,
-    .w = pixels_to_write,
-    .sync = true
-  };
-  ioe_write(AM_GPU_FBDRAW, &ctl);
+  // AM_GPU_FBDRAW_T ctl = {
+  //   .x = x, 
+  //   .y = y, 
+  //   .pixels = (void *) p,
+  //   .h = 1,
+  //   .w = pixels_to_write,
+  //   .sync = true
+  // };
+  // ioe_write(AM_GPU_FBDRAW, &ctl);
 
-  return len;
+  // return len;
 }
 
 /* the arguments are not used */
