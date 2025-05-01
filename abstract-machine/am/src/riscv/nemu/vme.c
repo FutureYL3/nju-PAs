@@ -72,7 +72,7 @@ void __am_switch(Context *c) {
 
 void map(AddrSpace *as, void *va, void *pa, int prot) {
   // 1) 计算一级页表索引、PDE 地址
-  uint32_t idx1 = (uintptr_t) va >> 22;
+  uint32_t idx1   = (uintptr_t) va >> 22;
   uint32_t *pgdir = (uint32_t *) as->ptr;
   uint32_t *pde   = &(pgdir[idx1]);
 
