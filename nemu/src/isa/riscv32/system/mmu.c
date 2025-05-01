@@ -16,6 +16,7 @@
 #include <isa.h>
 #include <memory/paddr.h>
 #include <memory/vaddr.h>
+#include <debug.h>
 
 #define PTE_V (1UL << 0)
 #define PTE_R (1UL << 1)
@@ -38,9 +39,11 @@ paddr_t isa_mmu_translate(vaddr_t vaddr, int len, int type) {
   uint32_t idx1        = vaddr >> 22;               // 虚拟地址高 10 位
   paddr_t  pde_pa      = page_dir_pa + idx1 * PTESIZE;
   uint32_t pde_val     = paddr_read(pde_pa, 4);
-  Assert((pde_val & PTE_V) != 0, "PDE 必须 valid, val=0x%x", pde_val);
+  Assert((pde_val & PTE_V) != 0, "PDE must be valid! vaddr=0x%x, pde_pa=0x%x, pde_val=0x%x",
+         vaddr, pde_pa, pde_val);
   Assert((pde_val & (PTE_R|PTE_W|PTE_X)) == 0,
-         "PDE 不能带 R/W/X, val=0x%x, va=0x%x", pde_val, vaddr);
+         "PDE should not have R|W|X bits! vaddr=0x%x, pde_pa=0x%x, pde_val=0x%x",
+         vaddr, pde_pa, pde_val);
 
   // 3) 从 PDE 中提取二级页表的 PPN→物理基址
   uint32_t pd_ppn      = (pde_val >> 10) & PPN_MASK; // 【先>>10再掩码】丢权限，只留 22 位
@@ -50,15 +53,18 @@ paddr_t isa_mmu_translate(vaddr_t vaddr, int len, int type) {
   uint32_t idx2        = (vaddr >> 12) & 0x3ff;      // 中间 10 位
   paddr_t  pte_pa      = page_table_pa + idx2 * PTESIZE;
   uint32_t pte_val     = paddr_read(pte_pa, 4);
-  Assert((pte_val & PTE_V) != 0, "PTE 必须 valid, val=0x%x", pte_val);
+  Assert((pte_val & PTE_V) != 0, "PTE must be valid! vaddr=0x%x, pte_pa=0x%x, pte_val=0x%x",
+         vaddr, pte_pa, pte_val);
   Assert((pte_val & (PTE_R|PTE_W|PTE_X)) != 0,
-         "Leaf PTE 至少带 R/W/X 之一, val=0x%x", pte_val);
+         "Leaf PTE must have at least one of R|W|X bits! vaddr=0x%x, pte_pa=0x%x, pte_val=0x%x",
+         vaddr, pte_pa, pte_val);
 
   // 5) 从 PTE 中提取物理页帧号，合成最终物理地址
   uint32_t pt_ppn      = (pte_val >> 10) & PPN_MASK; // 同样先 >>10 再掩码
   paddr_t  pa_base     = (paddr_t) pt_ppn << 12;     // 页基址
   paddr_t  pa          = pa_base | (vaddr & 0xfff); // 加上页内偏移
 
-  Assert(pa == vaddr, "直映射下应 va==pa, got pa=0x%x va=0x%x", pa, vaddr);
+  Assert(pa == vaddr, "Direct mapping check failed: pa=0x%x, va=0x%x, satp=0x%x",
+         pa, vaddr, cpu.satp);
   return pa;
 }
