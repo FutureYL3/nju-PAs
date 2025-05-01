@@ -86,11 +86,11 @@ size_t fb_write(const void *buf, size_t offset, size_t len) {
   // printf("in fb_write, w is %d and h = %d\n", w, h);
 
   /* updated: remove this feature */
-  // size_t fb_size = screen_w * screen_h * 4;
-  // if (offset + written_bytes > fb_size) {
-  //   Log("offset plus len exceeds frame buffer size in fb_write, just write to the remain space");
-  //   len = fb_size - offset;
-  // }
+  size_t fb_size = screen_w * screen_h * 4;
+  if (offset + len > fb_size) {
+    Log("offset plus len exceeds frame buffer size in fb_write, just write to the remain space");
+    len = fb_size - offset;
+  }
 
   // AM_GPU_FBDRAW_T ctl = {
   //   .x = x, 
