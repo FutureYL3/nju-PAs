@@ -68,7 +68,7 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
 			size_t memsz = phdr.p_memsz;
       // char *buf = (char *) malloc(filesz);
       char buf[filesz];
-      memset(buf, 0, filesz);
+      // memset(buf, 0, filesz);
       // char buf[filesz];
       fs_lseek(fd, offset, SEEK_SET);
       printf("6\n");
