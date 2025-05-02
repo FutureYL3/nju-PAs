@@ -23,6 +23,7 @@ struct timezone {
 };
 
 int brk(void *addr);
+int mm_brk(uintptr_t brk);
 int gettimeofday(struct timeval *tv, struct timezone *tz);
 void naive_uload(PCB *pcb, const char *filename);
 void context_uload(PCB *pcb, const char *filename, char *const argv[], char *const envp[]);
@@ -249,7 +250,7 @@ static file files[] = {
 }
 
 int brk(void *addr) {
-  return 0;
+  return mm_brk((uintptr_t) addr);
 }
 /*
   Because am only has timer implemented as giving out the uptime of the system, so in struct tv, 

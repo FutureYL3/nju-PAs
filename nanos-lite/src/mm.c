@@ -1,5 +1,6 @@
 #include <memory.h>
 #include <common.h>
+#include <proc.h>
 
 static void *pf = NULL;
 
@@ -26,8 +27,11 @@ void free_page(void *p) {
   panic("not implement yet");
 }
 
+extern PCB *current;
 /* The brk() system call handler. */
+// mm_brk() sets the program break to the value specified by brk
 int mm_brk(uintptr_t brk) {
+  // uintptr_t old_brk = current->max_brk;
   return 0;
 }
 

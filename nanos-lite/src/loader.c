@@ -63,7 +63,9 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
     }
 		if (phdr.p_type == PT_LOAD) {
 			void *vmem_addr = (void *) phdr.p_vaddr;
-      void *cur_vaddr = vmem_addr;
+      /* cur_vaddr_align and fill_gap_size are used to handle vmem_addr not aligning to page case*/
+      void *cur_vaddr = vmem_addr, *cur_vaddr_align = (void *) ROUNDDOWN(vmem_addr, PGSIZE);
+      int fill_gap_size = (int)(uintptr_t)(cur_vaddr - cur_vaddr_align);
 			size_t offset = phdr.p_offset;
 			size_t filesz = phdr.p_filesz;
 			size_t memsz = phdr.p_memsz;
@@ -71,22 +73,41 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
       /* handle pure bss segment */
       if (filesz == 0 && memsz > 0) {
         int bss_size = memsz;
+        if (fill_gap_size > 0) {
+          void *newpg_pa = new_page(1);
+          map(&(pcb->as), cur_vaddr_align, newpg_pa, PTE_R | PTE_W | PTE_X);
+          memset(newpg_pa, 0, PGSIZE);
+          bss_size -= PGSIZE - fill_gap_size;
+          cur_vaddr_align += PGSIZE;
+        }
         while (bss_size > 0) {
           void *newpg_pa = new_page(1);
-          map(&(pcb->as), cur_vaddr, newpg_pa, PTE_R | PTE_W | PTE_X);
+          map(&(pcb->as), cur_vaddr_align, newpg_pa, PTE_R | PTE_W | PTE_X);
           memset(newpg_pa, 0, PGSIZE);
           bss_size -= PGSIZE;
-          cur_vaddr += PGSIZE;
+          cur_vaddr_align += PGSIZE;
         }
         continue;
       }
 
       fs_lseek(fd, offset, SEEK_SET);
+      if (fill_gap_size > 0) {
+        void *newpg_pa = new_page(1);
+        map(&(pcb->as), cur_vaddr_align, newpg_pa, PTE_R | PTE_W | PTE_X);
+        size_t readlen = filesz - loadedsz >= PGSIZE - fill_gap_size ? PGSIZE - fill_gap_size : filesz - loadedsz;
+        /* write to the physical page */
+        if (fs_read(fd, newpg_pa + fill_gap_size, readlen) != readlen) {
+          panic("Failed to load program %s: buffer read less than %d bytes", filename, readlen);
+        }
+        cur_vaddr_align += PGSIZE;
+        loadedsz += readlen;
+      }
+      /* now vaddr should be aligned */
       while (loadedsz < filesz) {
         /* apply for new physical page */
         void *newpg_pa = new_page(1);
         /* map current vaddr to paddr */
-        map(&(pcb->as), cur_vaddr, newpg_pa, PTE_R | PTE_W | PTE_X);
+        map(&(pcb->as), cur_vaddr_align, newpg_pa, PTE_R | PTE_W | PTE_X);
         
         size_t readlen = filesz - loadedsz >= PGSIZE ? PGSIZE : filesz - loadedsz;
         /* write to the physical page */
@@ -108,8 +129,8 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
             /* handle the remaining "memsz - filesz" part(if has any) */
             while (bss_size > 0) {
               void *newpg_pa = new_page(1);
-              cur_vaddr += PGSIZE;
-              map(&(pcb->as), cur_vaddr, newpg_pa, PTE_R | PTE_W | PTE_X);
+              cur_vaddr_align += PGSIZE;
+              map(&(pcb->as), cur_vaddr_align, newpg_pa, PTE_R | PTE_W | PTE_X);
               memset(newpg_pa, 0, PGSIZE);
               bss_size -= PGSIZE;
             }
@@ -117,7 +138,7 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
           }
         }
 
-        cur_vaddr += readlen;
+        cur_vaddr_align += readlen;
       }
 		}
 	}
