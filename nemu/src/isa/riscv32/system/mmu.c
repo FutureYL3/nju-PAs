@@ -64,7 +64,7 @@ paddr_t isa_mmu_translate(vaddr_t vaddr, int len, int type) {
   paddr_t  pa_base     = (paddr_t) pt_ppn << 12;     // 页基址
   paddr_t  pa          = pa_base | (vaddr & 0xfff); // 加上页内偏移
 
-  Assert(pa == vaddr, "Direct mapping check failed: pa=0x%x, va=0x%x, satp=0x%x",
-         pa, vaddr, cpu.satp);
+//   Assert(pa == vaddr, "Direct mapping check failed: pa=0x%x, va=0x%x, satp=0x%x",
+//          pa, vaddr, cpu.satp);
   return pa;
 }
