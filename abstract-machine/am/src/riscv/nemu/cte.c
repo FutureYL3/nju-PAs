@@ -4,7 +4,12 @@
 
 static Context* (*user_handler)(Event, Context*) = NULL;
 
+void __am_get_cur_as(Context *c);
+void __am_switch(Context *c);
+
 Context* __am_irq_handle(Context *c) {
+  /* save current satp value to the context that is to be switched */
+  __am_get_cur_as(c);
   if (user_handler) {
     Event ev = {0};
     /* event packaging */
@@ -25,6 +30,8 @@ Context* __am_irq_handle(Context *c) {
   }
 
   c->mepc += 4; // add 4 to mepc to avoid infinite ecall
+  /* switch addr space */
+  __am_switch(c);
   return c;
 }
 

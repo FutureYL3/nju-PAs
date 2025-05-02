@@ -37,7 +37,6 @@ extern char ramdisk_end[];
 static uintptr_t loader(PCB *pcb, const char *filename) {
   /* we do not use flags and mode */
 	int fd = fs_open(filename, 0, 0);
-  // printf("get fd = %d\n", fd);
 	/* get ELF header */
   Elf_Ehdr ehdr = {};
   if (fs_read(fd, &ehdr, sizeof(Elf_Ehdr)) < 0) {
@@ -54,8 +53,6 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
 	uint32_t phoff = ehdr.e_phoff;
   /* set file open offset to phoff */
   fs_lseek(fd, phoff, SEEK_SET);
-  
-  // printf("get phnum = %x, phoff = %x\n", phnum, phoff);
 
 	// Elf_Phdr * phdr_table = (Elf_Phdr *) ((char *) &ramdisk_start + phoff);
 	for (int i = 0; i < phnum; ++ i) {
@@ -83,11 +80,7 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
         }
         continue;
       }
-      // char *buf = (char *) new_page(1);
-      // char buf[filesz];
-      // memset(buf, 0, PGSIZE);
-      // printf("buffer ranges from %p to %p\n", buf, buf + filesz);
-      // char buf[filesz];
+
       fs_lseek(fd, offset, SEEK_SET);
       while (loadedsz < filesz) {
         /* apply for new physical page */
@@ -100,12 +93,8 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
         if (fs_read(fd, newpg_pa, readlen) != readlen) {
           panic("Failed to load program %s: buffer read less than %d bytes", filename, readlen);
         }
-        /* write to the physical page */
-        // memcpy(newpg_pa, (void *) buf, readlen);
 
-        // offset += readlen;
         loadedsz += readlen;
-
         /* zero the "memsz - filesz" part(if has any) */
         if (loadedsz >= filesz) {
           size_t exceed_bytes = readlen;
@@ -130,17 +119,6 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
 
         cur_vaddr += readlen;
       }
-      
-
-
-      // memcpy(vmem_addr, (void *) buf, filesz);
-      // // free(buf);
-			// // ramdisk_read(vmem_addr, offset, filesz);
-			// if (memsz > filesz) {
-			// 	void *fileend = (void *) ((char *) vmem_addr + filesz);
-			// 	memset(fileend, 0, memsz - filesz);
-			// }
-      // printf("vmem_addr = %p, offset = %x, filesz = %x, memsz = %x\n", vmem_addr, offset, filesz, memsz);
 		}
 	}
 
@@ -178,14 +156,16 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   Log("Load program %s success", filename);
   /* create context in kernel stack */
   Area kstack = RANGE(pcb->stack, pcb->stack + STACK_SIZE);
-  Context *context = ucontext(NULL, kstack, entry);
+  Context *context = ucontext(&(pcb->as), kstack, entry);
   /* apply for new stack memory */
-  void *end = (void *) ((char *) new_page(NR_PAGE) + STACK_SIZE);
+  void *pa_start = (void *) new_page(NR_PAGE), *va_start = pcb->as.area.end - STACK_SIZE;
+  void *end = (void *) ((char *) pa_start + STACK_SIZE);
   printf("end is %p\n", (char *) end);
+  /* map user stack */
+  for (int i = 0; i < NR_PAGE; ++ i) {
+    map(&(pcb->as), va_start + i * PGSIZE, pa_start + i * PGSIZE, PTE_R | PTE_W | PTE_X);
+  }
   /* set the passed arguments and environment variables */
-  // printf("%s\n", filename);
-  // printf("%p\n", *argv);
-  // printf("%p\n", *envp);
   int argc = 0;
   char *last_end = (char *) end, *start;
   while (argv[argc] != NULL) {
