@@ -60,11 +60,11 @@ intptr_t _syscall_(intptr_t type, intptr_t a0, intptr_t a1, intptr_t a2) {
 
 void _exit(int status) {
   // printf("here");
-  _syscall_(SYS_exit, status, 0, 0);
+  // _syscall_(SYS_exit, status, 0, 0);
   // printf("exit with status %d, now jump to nterm\n", status);
   /* we make argv and envp both NULL to tell the kernel we need to reload nterm */
   /* normally, a process cannot invoke sys_execve with argv and envp both NULL */
-  // _syscall_(SYS_execve, (intptr_t) START_PROGRAM, (intptr_t) NULL, (intptr_t) NULL);
+  _syscall_(SYS_execve, (intptr_t) START_PROGRAM, (intptr_t) NULL, (intptr_t) NULL);
   
   /* should not reach here */
   while (1);

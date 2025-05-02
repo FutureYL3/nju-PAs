@@ -30,9 +30,9 @@ void init_proc() {
   // load program here
   context_kload(&pcb[0], hello_fun, "hello_fun 1");
   // context_uload(&pcb[0], "/bin/hello");
-  char *const argv[] = {"/bin/dummy", NULL};
+  char *const argv[] = {"/bin/nterm", NULL};
   char *const envp[] = {NULL};
-  context_uload(&pcb[1], "/bin/dummy", argv, envp);
+  context_uload(&pcb[1], "/bin/nterm", argv, envp);
   switch_boot_pcb();
   
 	// naive_uload(NULL, "/bin/nterm");
