@@ -26,6 +26,14 @@ size_t ramdisk_write(const void *buf, size_t offset, size_t len);
 extern char ramdisk_start[];
 extern char ramdisk_end[];
 
+#define PTE_V 0x01
+#define PTE_R 0x02
+#define PTE_W 0x04
+#define PTE_X 0x08
+#define PTE_U 0x10
+#define PTE_A 0x40
+#define PTE_D 0x80
+
 static uintptr_t loader(PCB *pcb, const char *filename) {
   /* we do not use flags and mode */
 	int fd = fs_open(filename, 0, 0);
@@ -57,26 +65,81 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
       panic("Failed to load program %s because can't read segment head %d", filename, i);
     }
 		if (phdr.p_type == PT_LOAD) {
-			void * vmem_addr = (void *) phdr.p_vaddr;
+			void *vmem_addr = (void *) phdr.p_vaddr;
+      void *cur_vaddr = vmem_addr;
 			size_t offset = phdr.p_offset;
 			size_t filesz = phdr.p_filesz;
 			size_t memsz = phdr.p_memsz;
-      char *buf = (char *) new_page(filesz / PGSIZE + 1);
+      size_t loadedsz = 0;
+      /* handle pure bss segment */
+      if (filesz == 0 && memsz > 0) {
+        int bss_size = memsz;
+        while (bss_size > 0) {
+          void *newpg_pa = new_page(1);
+          map(&(pcb->as), cur_vaddr, newpg_pa, PTE_R | PTE_W | PTE_X);
+          memset(newpg_pa, 0, PGSIZE);
+          bss_size -= PGSIZE;
+          cur_vaddr += PGSIZE;
+        }
+        continue;
+      }
+      // char *buf = (char *) new_page(1);
       // char buf[filesz];
-      memset(buf, 0, filesz);
-      printf("buffer ranges from %p to %p\n", buf, buf + filesz);
+      // memset(buf, 0, PGSIZE);
+      // printf("buffer ranges from %p to %p\n", buf, buf + filesz);
       // char buf[filesz];
       fs_lseek(fd, offset, SEEK_SET);
-      if (fs_read(fd, (void *) buf, filesz) != filesz) {
-        panic("Failed to load program %s because can't read total segment %d to buffer", filename, i);
+      while (loadedsz < filesz) {
+        /* apply for new physical page */
+        void *newpg_pa = new_page(1);
+        /* map current vaddr to paddr */
+        map(&(pcb->as), cur_vaddr, newpg_pa, PTE_R | PTE_W | PTE_X);
+        
+        size_t readlen = filesz - loadedsz >= PGSIZE ? PGSIZE : filesz - loadedsz;
+        /* write to the physical page */
+        if (fs_read(fd, newpg_pa, readlen) != readlen) {
+          panic("Failed to load program %s: buffer read less than %d bytes", filename, readlen);
+        }
+        /* write to the physical page */
+        // memcpy(newpg_pa, (void *) buf, readlen);
+
+        // offset += readlen;
+        loadedsz += readlen;
+
+        /* zero the "memsz - filesz" part(if has any) */
+        if (loadedsz >= filesz) {
+          size_t exceed_bytes = readlen;
+          int bss_size = memsz - filesz;
+          if (bss_size > 0) {
+            if (readlen != PGSIZE) {
+              /* handle the already allocated page */
+              memset(newpg_pa + exceed_bytes, 0, PGSIZE - exceed_bytes);
+              bss_size -= (int) (PGSIZE - exceed_bytes);
+            }
+            /* handle the remaining "memsz - filesz" part(if has any) */
+            while (bss_size > 0) {
+              void *newpg_pa = new_page(1);
+              cur_vaddr += PGSIZE;
+              map(&(pcb->as), cur_vaddr, newpg_pa, PTE_R | PTE_W | PTE_X);
+              memset(newpg_pa, 0, PGSIZE);
+              bss_size -= PGSIZE;
+            }
+            break;
+          }
+        }
+
+        cur_vaddr += readlen;
       }
-      memcpy(vmem_addr, (void *) buf, filesz);
-      // free(buf);
-			// ramdisk_read(vmem_addr, offset, filesz);
-			if (memsz > filesz) {
-				void *fileend = (void *) ((char *) vmem_addr + filesz);
-				memset(fileend, 0, memsz - filesz);
-			}
+      
+
+
+      // memcpy(vmem_addr, (void *) buf, filesz);
+      // // free(buf);
+			// // ramdisk_read(vmem_addr, offset, filesz);
+			// if (memsz > filesz) {
+			// 	void *fileend = (void *) ((char *) vmem_addr + filesz);
+			// 	memset(fileend, 0, memsz - filesz);
+			// }
       // printf("vmem_addr = %p, offset = %x, filesz = %x, memsz = %x\n", vmem_addr, offset, filesz, memsz);
 		}
 	}
@@ -107,6 +170,8 @@ void context_kload(PCB *pcb, void (*entry)(void *), void *arg) {
 extern Area heap;
 /* make sure that the argv[0] is always the executed filename, this is ensured by caller */
 void context_uload(PCB *pcb, const char *filename, char *const argv[], char *const envp[]) {
+  /* create addr space */
+  protect(&(pcb->as));
   /* load the user program and get the entry */
   Log("Loading program: %s", filename);
   void (*entry)(void *) = (void (*)(void *)) loader(pcb, filename); 
