@@ -30,8 +30,9 @@ Context* __am_irq_handle(Context *c) {
   }
 
   c->mepc += 4; // add 4 to mepc to avoid infinite ecall
-  /* switch addr space */
-  __am_switch(c);
+  /* switch addr space, no switch needed for kernal thread */
+  if (c->pdir != NULL)  __am_switch(c);
+
   return c;
 }
 
@@ -56,6 +57,9 @@ Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   context->mstatus = 0x1800; // to pass difftest
   /* set arguments passed to the kernal thread */
   context->GPR2 = (uintptr_t) arg;
+  /* set addr space pointer to NULL because every addr space am created has kernal map */
+  context->pdir = NULL;
+
   return context;
 }
 
