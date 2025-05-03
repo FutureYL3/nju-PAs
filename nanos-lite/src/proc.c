@@ -28,11 +28,15 @@ void init_proc() {
   Log("Initializing processes...");
 
   // load program here
-  context_kload(&pcb[0], hello_fun, "hello_fun 1");
-  // context_uload(&pcb[0], "/bin/hello");
-  char *const argv[] = {"/bin/nterm", NULL};
-  char *const envp[] = {NULL};
-  context_uload(&pcb[1], "/bin/nterm", argv, envp);
+  // context_kload(&pcb[0], hello_fun, "hello_fun 1");
+  char *const argv1[] = {"/bin/hello", NULL};
+  char *const envp1[] = {NULL};
+  context_uload(&pcb[0], "/bin/hello", argv1, envp1);
+
+  char *const argv2[] = {"/bin/nterm", NULL};
+  char *const envp2[] = {NULL};
+  context_uload(&pcb[1], "/bin/nterm", argv2, envp2);
+  
   switch_boot_pcb();
   
 	// naive_uload(NULL, "/bin/nterm");
