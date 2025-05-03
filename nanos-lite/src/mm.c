@@ -37,11 +37,11 @@ void free_page(void *p) {
 #define PTE_D 0x80
 
 extern PCB *current;
-bool first = true;
 /* The brk() system call handler. */
 // mm_brk() sets the program break to the value specified by brk
 int mm_brk(uintptr_t brk) {
   uintptr_t old_brk = current->max_brk;
+  printf("old brk = %p, new brk = %p\n", old_brk, brk);
   if (brk <= old_brk) {
     return 0;           // only support scale
   }
