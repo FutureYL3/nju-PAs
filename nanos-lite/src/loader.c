@@ -189,7 +189,7 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   /* apply for new stack memory */
   void *pa_start = (void *) new_page(NR_PAGE), *va_start = pcb->as.area.end - STACK_SIZE;
   void *end = (void *) ((char *) pa_start + STACK_SIZE);
-  printf("end is %p\n", (char *) end);
+  // printf("end is %p\n", (char *) end);
   /* map user stack */
   for (int i = 0; i < NR_PAGE; ++ i) {
     map(&(pcb->as), va_start + i * PGSIZE, pa_start + i * PGSIZE, PTE_R | PTE_W | PTE_X);
