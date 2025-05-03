@@ -8,7 +8,7 @@ bool map_exist(AddrSpace *as, void *va);
 void* new_page(size_t nr_page) {
   void *ret = pf;
   pf = (void *) ((char *) pf + nr_page * PGSIZE);
-  printf("allocated free page from %p to %p\n", (char *) ret, (char *) pf);
+  // printf("allocated free page from %p to %p\n", (char *) ret, (char *) pf);
   // printf("address of pf is %p\n", &pf);
   return ret;
 }
