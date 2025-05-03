@@ -51,6 +51,8 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
 	/* get number of segments to be loaded and offset of Elf_Phdr */
 	uint32_t phnum = ehdr.e_phnum;
 	uint32_t phoff = ehdr.e_phoff;
+  /* used to store the program break */
+  uintptr_t max_brk = 0;
   /* set file open offset to phoff */
   fs_lseek(fd, phoff, SEEK_SET);
 
@@ -62,6 +64,9 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
       panic("Failed to load program %s because can't read segment head %d", filename, i);
     }
 		if (phdr.p_type == PT_LOAD) {
+      uintptr_t seg_end = phdr.p_vaddr + phdr.p_memsz;
+      if (seg_end > max_brk)  max_brk = seg_end;
+
 			void *vmem_addr = (void *) phdr.p_vaddr;
       /* cur_vaddr_align and fill_gap_size are used to handle vmem_addr not aligning to page case*/
       void *cur_vaddr = vmem_addr, *cur_vaddr_align = (void *) ROUNDDOWN(vmem_addr, PGSIZE);
@@ -145,6 +150,9 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
 
   fs_close(fd);
 
+  /* set max_brk */
+  pcb->max_brk = max_brk;
+
 	return (uintptr_t) ehdr.e_entry;	
 }
 
@@ -224,7 +232,7 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   *(--p_end) = argc;
   /* set GPRX to address of argc */
   context->GPRx = (uintptr_t) p_end;
-
+  /* set context pointer */
   pcb->cp = context;
 }
 
