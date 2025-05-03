@@ -70,6 +70,32 @@ void __am_switch(Context *c) {
 #define PTESIZE   4
 #define PPN_MASK  ((1u << 22) - 1)    // 22 位 PPN 掩码
 
+/* helper function: check whether va has mapped to a physical page */
+bool map_exist(AddrSpace *as, void *va) {
+  // 1) 计算一级页表索引、PDE 地址
+  uint32_t idx1   = (uintptr_t) va >> 22;
+  uint32_t *pgdir = (uint32_t *) as->ptr;
+  uint32_t *pde   = &(pgdir[idx1]);
+  // 2) 如果还没创建二级页表，则映射不存在，返回false
+  if (!(*pde & PTE_V)) {
+    return false;
+  }
+  // 3) 如果存在PDE，则取出二级页表物理基址进一步检查
+  uint32_t raw_pde = *pde;
+  //   ——先右移 10 丢掉权限位，再掩码，只留下面22位
+  uint32_t pd_ppn  = (raw_pde >> 10) & PPN_MASK;
+  uint32_t *pt     = (uint32_t *)(pd_ppn << 12);
+  // 4) 计算二级页表索引、PTE 地址
+  uint32_t idx2 = ((uintptr_t) va >> 12) & 0x3ff;
+  uint32_t *pte = &(pt[idx2]);
+  // 5) 如果PTE不合法，则表明目前还没有映射，返回false
+  if (!(*pte & PTE_V)) {
+    return false;
+  }
+  // 6) 通过了所有检查，表明存在，返回true
+  return true;
+}
+
 void map(AddrSpace *as, void *va, void *pa, int prot) {
   // 1) 计算一级页表索引、PDE 地址
   uint32_t idx1   = (uintptr_t) va >> 22;

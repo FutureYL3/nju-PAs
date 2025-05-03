@@ -3,6 +3,7 @@
 #include <proc.h>
 
 static void *pf = NULL;
+bool map_exist(AddrSpace *as, void *va);
 
 void* new_page(size_t nr_page) {
   void *ret = pf;
@@ -40,32 +41,23 @@ bool first = true;
 /* The brk() system call handler. */
 // mm_brk() sets the program break to the value specified by brk
 int mm_brk(uintptr_t brk) {
-  // uintptr_t old_brk = current->max_brk;
-  // if (brk > old_brk) {
-  //   if (first) {
-  //     // 找到 brk 落在哪一页
-  //     uintptr_t old_page = ROUNDDOWN(old_brk, PGSIZE);
-  //     uintptr_t new_pg = ROUNDDOWN(brk, PGSIZE);
-  //     // 遍历所有页
-  //     for (uintptr_t va = old_page; va <= new_pg; va += PGSIZE) {
-  //       void *pa = new_page(1);
-  //       map(&(current->as), (void *) va, pa, PTE_R | PTE_W);
-  //     }
+  uintptr_t old_brk = current->max_brk;
+  if (brk <= old_brk) {
+    return 0;           // only support scale
+  }
 
-  //     current->max_brk = new_pg + PGSIZE;
-  //     first = false;
-  //   }
-  //   else {
-  //     uintptr_t new_pg = ROUNDDOWN(brk, PGSIZE);
-  //     for (uintptr_t va = old_brk; va <= new_pg; va += PGSIZE) {
-  //       void *pa = new_page(1);
-  //       map(&(current->as), (void *) va, pa, PTE_R | PTE_W);
-  //     }
+  uintptr_t first_page = ROUNDUP(old_brk, PGSIZE);
+  uintptr_t last_page  = ROUNDDOWN(brk - 1, PGSIZE);
+  /* map */
+  for (uintptr_t va = first_page; va <= last_page; va += PGSIZE) {
+    // TODO: implement pte_is_valid()
+    if (!map_exist(&(current->as), (void*) va)) {
+      void *pa = new_page(1);
+      map(&(current->as), (void*) va, pa, PTE_R | PTE_W);
+    }
+  }
 
-  //     current->max_brk = new_pg + PGSIZE;
-  //   }
-  // }
-
+  current->max_brk = brk;
   return 0;
 }
 
