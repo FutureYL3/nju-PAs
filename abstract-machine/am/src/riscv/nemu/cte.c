@@ -37,8 +37,8 @@ Context* __am_irq_handle(Context *c) {
   }
 
   /* add 4 to mepc to avoid infinite ecall */
-  if (c->mcause == 1        /* ECALL */
-      || c->mcause == -1) { /* YIELD */
+  if (c->mcause == (uint32_t) (1)        /* ECALL */
+      || c->mcause == (uint32_t) (-1)) { /* YIELD */
     c->mepc += 4;
   }
 
