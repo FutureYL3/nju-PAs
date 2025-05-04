@@ -131,7 +131,7 @@ Context *ucontext(AddrSpace *as, Area kstack, void *entry) {
   /* create the context */
   Context *context = (Context *) ((char *) kstack.end - sizeof(Context));
   /* set the entry */
-  context->mepc = (uintptr_t) entry - 4; // cooperate with `c->mepc += 4;`
+  context->mepc = (uintptr_t) entry; // do not need to cooperate with `c->mepc += 4;`
   /* set the addr space ptr */
   context->pdir = as->ptr;
   /* difftest */

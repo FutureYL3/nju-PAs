@@ -67,7 +67,7 @@ Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   /* create the context */
   Context *context = (Context *) ((char *) kstack.end - sizeof(Context));
   /* set the kernal thread entry */
-  context->mepc = (uintptr_t) entry - 4; // cooperate with `c->mepc += 4;`
+  context->mepc = (uintptr_t) entry; // do not need to cooperate with `c->mepc += 4;`
   /* difftest */
   context->mstatus = 0x1800; // to pass difftest
   /* open interrupt */
