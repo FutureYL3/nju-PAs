@@ -137,8 +137,8 @@ Context *ucontext(AddrSpace *as, Area kstack, void *entry) {
   /* difftest */
   context->mstatus = 0x1800; // to pass difftest
   /* open interrupt */
-  context->mstatus |= MIE;
-  // context->mstatus |= MPIE;
+  // context->mstatus |= MIE;
+  context->mstatus |= MPIE;
 
   
   return context;
