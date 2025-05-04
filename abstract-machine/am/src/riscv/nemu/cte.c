@@ -69,7 +69,6 @@ Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   /* difftest */
   context->mstatus = 0x1800; // to pass difftest
   /* open interrupt */
-  // context->mstatus |= MIE;
   context->mstatus |= MPIE;
   /* set arguments passed to the kernal thread */
   context->GPR2 = (uintptr_t) arg;

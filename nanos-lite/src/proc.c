@@ -43,11 +43,18 @@ void init_proc() {
 }
 
 Context* schedule(Context *prev) {
+  static uint32_t helper = 0;
   // save the current context pointer
   current->cp = prev;
 
   /* select next process to run */
-  current = (current == &pcb[0] ? &pcb[1] : &pcb[0]);
+  if (helper++ % 10 == 0) {
+    current = &pcb[0];
+  }
+  else {
+    current = &pcb[1];
+  }
+  // current = (current == &pcb[0] ? &pcb[1] : &pcb[0]);
 
   // then return the new context
   return current->cp;
