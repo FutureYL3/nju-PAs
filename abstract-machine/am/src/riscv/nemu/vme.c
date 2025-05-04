@@ -124,7 +124,8 @@ void map(AddrSpace *as, void *va, void *pa, int prot) {
   *pte = (ppn_pa << 10) | PTE_V | PTE_R | PTE_W | PTE_X;
 }
 
-#define MIE 0x08
+#define MIE   0x08
+#define MPIE  0x80
 
 Context *ucontext(AddrSpace *as, Area kstack, void *entry) {
   /* create the context */
@@ -137,6 +138,8 @@ Context *ucontext(AddrSpace *as, Area kstack, void *entry) {
   context->mstatus = 0x1800; // to pass difftest
   /* open interrupt */
   context->mstatus |= MIE;
+  context->mstatus |= MPIE;
+
   
   return context;
 }

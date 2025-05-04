@@ -56,6 +56,7 @@ bool cte_init(Context*(*handler)(Event, Context*)) {
 }
 
 #define MIE 0x08
+#define MPIE  0x80
 
 Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   /* create the context */
@@ -66,6 +67,7 @@ Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   context->mstatus = 0x1800; // to pass difftest
   /* open interrupt */
   context->mstatus |= MIE;
+  context->mstatus |= MPIE;
   /* set arguments passed to the kernal thread */
   context->GPR2 = (uintptr_t) arg;
   /* set addr space pointer to NULL because every addr space am created has kernal map */
