@@ -14,6 +14,7 @@
 ***************************************************************************************/
 
 #include <isa.h>
+#include <stdio.h>
 
 #define MIE_MASK    0x08        // bit3
 #define MIE_ZERO    0xfffffff7
@@ -45,8 +46,9 @@ word_t isa_query_intr() {
   /* because we make timer intr directly connect to cpu's INTR pin, so its value determines whether we got a timer interrupt */
   if (cpu.INTR == true && cpu.mtvec != 0  // cpu.mtvec == 0 indicates that the mtvec has not been initialized yet
       && (cpu.mstatus & MIE_MASK) >> 3 == 1) { // also, cpu should be in open interrupt status
-      
+
     cpu.INTR = false;
+    printf("Got IRQ_TIMER in NEMU\n");
     return IRQ_TIMER;
   }
 
