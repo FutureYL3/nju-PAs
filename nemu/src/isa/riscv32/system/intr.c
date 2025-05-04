@@ -48,7 +48,7 @@ word_t isa_query_intr() {
       && (cpu.mstatus & MIE_MASK) >> 3 == 1) { // also, cpu should be in open interrupt status
 
     cpu.INTR = false;
-    printf("Got IRQ_TIMER in NEMU\n");
+    // printf("Got IRQ_TIMER in NEMU\n");
     return IRQ_TIMER;
   }
 
