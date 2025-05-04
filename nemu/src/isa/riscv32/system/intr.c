@@ -25,7 +25,7 @@ word_t isa_raise_intr(word_t NO, vaddr_t epc) {
 #ifdef CONFIG_ETRACE
   Log("Raised exception/interruption: The number is %d(" FMT_WORD "), at pc = " FMT_WORD "\n", NO, NO, epc);
 #endif
-  printf("isa_raise_intr\n");
+  // printf("isa_raise_intr\n");
   cpu.mepc = epc;
   cpu.mcause = NO;
   /* store MIE in MPIE and zero MIE */
@@ -46,7 +46,7 @@ word_t isa_query_intr() {
       && (cpu.mstatus & MIE_MASK) >> 3 == 1) { // also, cpu should be in open interrupt status
 
     cpu.INTR = false;
-    printf("Got IRQ_TIMER in NEMU\n");
+    // printf("Got IRQ_TIMER in NEMU\n");
     return IRQ_TIMER;
   }
 

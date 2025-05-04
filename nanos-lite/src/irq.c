@@ -17,7 +17,7 @@ static Context* do_event(Event e, Context* c) {
       break;
     }
     case EVENT_IRQ_TIMER: {
-      printf("Get timer irq in do_event\n");
+      // printf("Get timer irq in do_event\n");
       return schedule(c);
       /* should not reach here */
       while (1) {};
