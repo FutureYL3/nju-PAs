@@ -25,6 +25,7 @@ Context* __am_irq_handle(Context *c) {
         break;
       }
       case IRQ_TIMER: {
+        printf("Got EVENT_IRQ_TIMER in am\n");
         ev.event = EVENT_IRQ_TIMER;
         break;
       }
@@ -38,7 +39,7 @@ Context* __am_irq_handle(Context *c) {
   c->mepc += 4; // add 4 to mepc to avoid infinite ecall
   /* switch addr space, no switch needed for kernal thread */
   if (c->pdir != NULL)  __am_switch(c);
-
+  printf("handle EVENT_IRQ_TIMER in am finished\n")
   return c;
 }
 
