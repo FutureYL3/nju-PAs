@@ -43,7 +43,7 @@ word_t isa_raise_intr(word_t NO, vaddr_t epc) {
 
 word_t isa_query_intr() {
   /* because we make timer intr directly connect to cpu's INTR pin, so its value determines whether we got a timer interrupt */
-  if (cpu.INTR == true) {
+  if (cpu.INTR == true && cpu.mtvec != 0) {  // cpu.mtvec == 0 indicates that the mtvec has not been initialized yet
     cpu.INTR = false;
     return IRQ_TIMER;
   }
