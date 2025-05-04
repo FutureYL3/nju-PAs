@@ -17,8 +17,6 @@
 #include <stdio.h>
 
 #define MIE_MASK    0x08        // bit3
-#define MIE_ZERO    0xfffffff7
-#define L7BITS_MASK 0x7f        // bit0-6
 
 word_t isa_raise_intr(word_t NO, vaddr_t epc) {
   /* TODO: Trigger an interrupt/exception with ``NO''.
@@ -30,12 +28,12 @@ word_t isa_raise_intr(word_t NO, vaddr_t epc) {
 
   cpu.mepc = epc;
   cpu.mcause = NO;
-  /* store MIE in MPIE */
-  word_t mpie = (cpu.mstatus & MIE_MASK) << 4;
-  word_t new_l8bits = mpie + (cpu.mstatus & L7BITS_MASK);
-  cpu.mstatus = (cpu.mstatus & 0xffffff00) + new_l8bits;
-  /* zero MIE */
-  cpu.mstatus &= MIE_ZERO;
+  /* store MIE in MPIE and zero MIE */
+  word_t old_mstatus = cpu.mstatus;
+  word_t old_mie_val = (old_mstatus >> 3) & 1;  // 获取 MIE 的值 (0 或 1)
+  cpu.mstatus &= ~MIE_MASK;                     // 清除 MIE (bit 3)
+  cpu.mstatus &= ~(1UL << 7);                   // 先清除 MPIE (bit 7)
+  cpu.mstatus |= (old_mie_val << 7);            // 根据旧 MIE 的值设置 MPIE (bit 7)
 
   return cpu.mtvec;
 }

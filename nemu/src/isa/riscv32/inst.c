@@ -86,7 +86,6 @@ enum {
 
 #define MIE_MASK    0x08      // bit 3
 #define MPIE_MASK   0x80      // bit 7
-#define L3BITS_MASK 0x07      // bit 0–2
 
 static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2, word_t *imm, int type) {
   uint32_t i = s->isa.inst.val;
@@ -172,7 +171,7 @@ static int decode_exec(Decode *s) {
 	INSTPAT("??????? ????? ????? 010 ????? 11100 11", csrrs  , I, do { if (imm == 0x305) {if (src1 != 0) cpu.mtvec |= src1; R(rd) = cpu.mtvec;} else if (imm == 0x300) {if (src1 != 0) cpu.mstatus |= src1; R(rd) = cpu.mstatus;} else if (imm == 0x341) {if (src1 != 0) cpu.mepc |= src1; R(rd) = cpu.mepc;} else if (imm == 0x342) {if (src1 != 0) cpu.mcause |= src1; R(rd) = cpu.mcause;} else if (imm == 0x180) {if (src1 != 0) cpu.satp |= src1; R(rd) = cpu.satp;} else panic("unknown command at pc = " FMT_WORD "\n", s->pc); } while (0));
   INSTPAT("0000000 00001 00000 000 00000 11100 11", ebreak , N, NEMUTRAP(s->pc, R(10))); // R(10) is $a0
  	INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall  , N, s->dnpc = isa_raise_intr(R(17) == -1 ? -1 : 1, s->pc));  // R(17) is $a7, -1 is yield, 1 is syscall
-	INSTPAT("0011000 00010 00000 000 00000 11100 11", mret   , N, s->dnpc = cpu.mepc; word_t old = cpu.mstatus; word_t mie = (old & MPIE_MASK) >> 4; word_t new_l4 = (old & L3BITS_MASK) + mie; cpu.mstatus = (old & ~0xf) | new_l4 | MPIE_MASK);
+	INSTPAT("0011000 00010 00000 000 00000 11100 11", mret   , N, s->dnpc = cpu.mepc; word_t old_mstatus = cpu.mstatus; word_t mpie_val = (old_mstatus >> 7) & 1; cpu.mstatus &= ~MIE_MASK; cpu.mstatus |= (mpie_val << 3); cpu.mstatus |= MPIE_MASK);
   INSTPAT("??????? ????? ????? ??? ????? ????? ??", inv    , N, INV(s->pc));
   INSTPAT_END();
 
