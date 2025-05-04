@@ -16,4 +16,6 @@
 #include <isa.h>
 
 void dev_raise_intr() {
+  /* true for high voltage level, and false for low */
+  cpu.INTR = true;
 }

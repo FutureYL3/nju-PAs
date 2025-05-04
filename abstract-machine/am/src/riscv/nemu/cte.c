@@ -7,6 +7,8 @@ static Context* (*user_handler)(Event, Context*) = NULL;
 void __am_get_cur_as(Context *c);
 void __am_switch(Context *c);
 
+#define IRQ_TIMER 0x80000007  // for riscv32
+
 Context* __am_irq_handle(Context *c) {
   /* save current satp value to the context that is to be switched */
   __am_get_cur_as(c);
@@ -20,6 +22,10 @@ Context* __am_irq_handle(Context *c) {
       }
       case 1: { // syscall
         ev.event = EVENT_SYSCALL;
+        break;
+      }
+      case IRQ_TIMER: {
+        ev.event = EVENT_IRQ_TIMER;
         break;
       }
       default: ev.event = EVENT_ERROR; break;
@@ -48,6 +54,8 @@ bool cte_init(Context*(*handler)(Event, Context*)) {
   return true;
 }
 
+#define MIE 0x08
+
 Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   /* create the context */
   Context *context = (Context *) ((char *) kstack.end - sizeof(Context));
@@ -55,6 +63,8 @@ Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   context->mepc = (uintptr_t) entry - 4; // cooperate with `c->mepc += 4;`
   /* difftest */
   context->mstatus = 0x1800; // to pass difftest
+  /* open interrupt */
+  context->mstatus |= MIE;
   /* set arguments passed to the kernal thread */
   context->GPR2 = (uintptr_t) arg;
   /* set addr space pointer to NULL because every addr space am created has kernal map */

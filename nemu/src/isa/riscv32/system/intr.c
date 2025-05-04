@@ -15,6 +15,10 @@
 
 #include <isa.h>
 
+#define MIE_MASK    0x08        // bit3
+#define MIE_ZERO    0xfffffff7
+#define L7BITS_MASK 0x7f        // bit0-6
+
 word_t isa_raise_intr(word_t NO, vaddr_t epc) {
   /* TODO: Trigger an interrupt/exception with ``NO''.
    * Then return the address of the interrupt/exception vector.
@@ -25,9 +29,24 @@ word_t isa_raise_intr(word_t NO, vaddr_t epc) {
 
   cpu.mepc = epc;
   cpu.mcause = NO;
+  /* store MIE in MPIE */
+  word_t mpie = (cpu.mstatus & MIE_MASK) << 4;
+  word_t new_l8bits = mpie + (cpu.mstatus & L7BITS_MASK);
+  cpu.mstatus = (cpu.mstatus & 0xffffff00) + new_l8bits;
+  /* zero MIE */
+  cpu.mstatus &= MIE_ZERO;
+
   return cpu.mtvec;
 }
 
+#define IRQ_TIMER 0x80000007  // for riscv32
+
 word_t isa_query_intr() {
+  /* because we make timer intr directly connect to cpu's INTR pin, so its value determines whether we got a timer interrupt */
+  if (cpu.INTR == true) {
+    cpu.INTR = false;
+    return IRQ_TIMER;
+  }
+
   return INTR_EMPTY;
 }

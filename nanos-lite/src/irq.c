@@ -16,6 +16,12 @@ static Context* do_event(Event e, Context* c) {
       do_syscall(c);
       break;
     }
+    case EVENT_IRQ_TIMER: {
+      Log("Get timer irq, switch process...");
+      return schedule(c);
+      /* should not reach here */
+      while (1) {};
+    }
     default: panic("Unhandled event ID = %d", e.event);
   }
 
