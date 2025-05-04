@@ -17,7 +17,7 @@ static Context* do_event(Event e, Context* c) {
       break;
     }
     case EVENT_IRQ_TIMER: {
-      Log("Get timer irq, switch process...");
+      // Log("Get timer irq, switch process...");
       return schedule(c);
       /* should not reach here */
       while (1) {};
