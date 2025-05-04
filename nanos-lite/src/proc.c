@@ -20,7 +20,7 @@ void hello_fun(void *arg) {
   while (1) {
     Log("Hello World from Nanos-lite with arg '%s' for the %dth time!", (char *) arg, j);
     j ++;
-    yield();
+    // yield();
   }
 }
 
