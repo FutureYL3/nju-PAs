@@ -53,13 +53,14 @@ save_context:
   csrr t0, mscratch          # Read mscratch into t0
   beqz t0, store_kernel_sp_np   # If mscratch is 0, branch to store current sp (kernel sp)
   STORE t0, OFFSET_SP(sp)
-  STORE 0, OFFSET_NP(sp)      // if mscratch is not 0, then next privilege is user
+  STORE zero, OFFSET_NP(sp)      // if mscratch is not 0, then next privilege is user
   j after_store_sp_np
 
 store_kernel_sp_np:
   addi t0, sp, CONTEXT_SIZE
   STORE t0, OFFSET_SP(sp)
-  STORE 1, OFFSET_NP(sp)      // if mscratch is 0, then next privilege is kernal
+  li t1, 1
+  STORE t1, OFFSET_NP(sp)      // if mscratch is 0, then next privilege is kernal
 
 after_store_sp_np:
   # make ksp(mscratch) = 0 to support re-entry of CTE

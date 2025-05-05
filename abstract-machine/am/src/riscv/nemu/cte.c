@@ -77,7 +77,7 @@ Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   /* set addr space pointer to NULL because every addr space am created has kernal map */
   context->pdir = NULL;
   /* set c->sp and c-> np */
-  context->gpr[2] = kstack.end;
+  context->gpr[2] = (uintptr_t) kstack.end;
   context->np = 1;
 
   return context;
