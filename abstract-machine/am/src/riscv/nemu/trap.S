@@ -49,6 +49,11 @@ save_context:
   STORE t1, OFFSET_STATUS(sp)
   STORE t2, OFFSET_EPC(sp)
 
+  # set mstatus.MPRV to pass difftest
+  li a0, (1 << 17)
+  or t1, t1, a0
+  csrw mstatus, t1
+
   # store original sp and np
   csrr t0, mscratch          # Read mscratch into t0
   beqz t0, store_kernel_sp_np   # If mscratch is 0, branch to store current sp (kernel sp)
@@ -65,12 +70,9 @@ store_kernel_sp_np:
 
 after_store_sp_np:
   # make ksp(mscratch) = 0 to support re-entry of CTE
-  csrw mscratch, 0
+  li t1, 0
+  csrw mscratch, t1
 
-  # set mstatus.MPRV to pass difftest
-  li a0, (1 << 17)
-  or t1, t1, a0
-  csrw mstatus, t1
   # handle interruption
   mv a0, sp
   jal __am_irq_handle
