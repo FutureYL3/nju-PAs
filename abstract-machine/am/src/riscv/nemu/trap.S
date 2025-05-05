@@ -53,7 +53,8 @@ save_context:
   csrr t0, mscratch          # Read mscratch into t0
   beqz t0, store_kernel_sp_np   # If mscratch is 0, branch to store current sp (kernel sp)
   STORE t0, OFFSET_SP(sp)
-  STORE x0, OFFSET_NP(sp)      // if mscratch is not 0, then next privilege is user
+  li t1, 0
+  STORE t1, OFFSET_NP(sp)      // if mscratch is not 0, then next privilege is user
   j after_store_sp_np
 
 store_kernel_sp_np:
