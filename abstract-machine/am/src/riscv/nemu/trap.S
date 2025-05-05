@@ -26,12 +26,19 @@ f(30) f(31)
 #define OFFSET_CAUSE  (32 * XLEN)
 #define OFFSET_STATUS (33 * XLEN)
 #define OFFSET_EPC    (34 * XLEN)
+#define OFFSET_NP     (35 * XLEN)
 
 .align 3
 .globl __am_asm_trap
 __am_asm_trap:
+  # switch to kernal stack if needed
+  csrrw sp, mscratch, sp   // (1) atomically exchange sp and mscratch
+  bnez sp, save_context    // (2) take the branch if we trapped from user
+  csrr sp, mscratch        // (3) if we trapped from kernel, restore the original sp
+
+save_context:
   addi sp, sp, -CONTEXT_SIZE
-  # store the context
+  # store the register and csr, make room for general register usage
   MAP(REGS, PUSH)
 
   csrr t0, mcause
@@ -41,6 +48,22 @@ __am_asm_trap:
   STORE t0, OFFSET_CAUSE(sp)
   STORE t1, OFFSET_STATUS(sp)
   STORE t2, OFFSET_EPC(sp)
+
+  # store original sp and np
+  csrr t0, mscratch          # Read mscratch into t0
+  beqz t0, store_kernel_sp_np   # If mscratch is 0, branch to store current sp (kernel sp)
+  STORE t0, OFFSET_SP(sp)
+  STORE 0, OFFSET_NP(sp)      // if mscratch is not 0, then next privilege is user
+  j after_store_sp_np
+
+store_kernel_sp_np:
+  addi t0, sp, CONTEXT_SIZE
+  STORE t0, OFFSET_SP(sp)
+  STORE 1, OFFSET_NP(sp)      // if mscratch is 0, then next privilege is kernal
+
+after_store_sp_np:
+  # make ksp(mscratch) = 0 to support re-entry of CTE
+  csrw mscratch, 0
 
   # set mstatus.MPRV to pass difftest
   li a0, (1 << 17)
@@ -52,7 +75,16 @@ __am_asm_trap:
 
   # make sp point at returned context to achieve context switch and multi program
   mv sp, a0
+  
+  # Check if next privilege is user (OFFSET_NP(sp) == 0) before restoring context
+  LOAD t0, OFFSET_NP(sp)           # Load the value at OFFSET_NP(sp) into t0
+  bnez t0, skip_restore_mscratch   # If t0 is not zero (next privilege is kernel), skip restoring mscratch
 
+  # If next privilege is user, restore user sp to mscratch for potential re-entry
+  addi t1, sp, CONTEXT_SIZE        # Calculate the original user sp before trap (current sp + CONTEXT_SIZE)
+  csrw mscratch, t1                # Write the calculated user sp back to mscratch
+
+skip_restore_mscratch:
   # restore the context
   LOAD t1, OFFSET_STATUS(sp)
   LOAD t2, OFFSET_EPC(sp)
@@ -62,5 +94,7 @@ __am_asm_trap:
   MAP(REGS, POP)
 
   addi sp, sp, CONTEXT_SIZE
+  # switch sp to c->sp
+  LOAD sp, -(34 * XLEN)(sp)
   # return to mepc to continue executing another process or current process
   mret

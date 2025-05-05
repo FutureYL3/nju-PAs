@@ -24,7 +24,7 @@ Context* __am_irq_handle(Context *c) {
         ev.event = EVENT_SYSCALL;
         break;
       }
-      case IRQ_TIMER: {
+      case IRQ_TIMER: { // timer iterruption
         ev.event = EVENT_IRQ_TIMER;
         break;
       }
@@ -51,6 +51,8 @@ extern void __am_asm_trap(void);
 bool cte_init(Context*(*handler)(Event, Context*)) {
   // initialize exception entry
   asm volatile("csrw mtvec, %0" : : "r"(__am_asm_trap));
+  // initialize global kernal stack
+  asm volatile("csrw mscratch, %0" : : "r"(heap.end));
 
   // register event handler
   user_handler = handler;
@@ -58,7 +60,7 @@ bool cte_init(Context*(*handler)(Event, Context*)) {
   return true;
 }
 
-#define MIE 0x08
+#define MIE   0x08
 #define MPIE  0x80
 
 Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
@@ -74,6 +76,9 @@ Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   context->GPR2 = (uintptr_t) arg;
   /* set addr space pointer to NULL because every addr space am created has kernal map */
   context->pdir = NULL;
+  /* set c->sp and c-> np */
+  context->gpr[2] = kstack.end;
+  context->np = 1;
 
   return context;
 }

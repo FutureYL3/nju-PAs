@@ -21,7 +21,7 @@
 typedef struct {
   word_t gpr[32];
   vaddr_t pc;
-	word_t mtvec, mepc, mstatus, mcause, satp;
+	word_t mtvec, mepc, mstatus, mcause, satp, mscratch;
   bool INTR;
 } riscv32_CPU_state;
 
