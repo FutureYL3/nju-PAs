@@ -41,14 +41,17 @@ size_t events_read(void *buf, size_t offset, size_t len) {
   switch (keycode) {
     case AM_KEY_F1: {
       fg_pcb = 1;
+      Log("Switch to PCB 1 process");
       break;
     }
     case AM_KEY_F2: {
       fg_pcb = 2;
+      Log("Switch to PCB 2 process");
       break;
     }
     case AM_KEY_F3: {
       fg_pcb = 3;
+      Log("Switch to PCB 3 process");
       break;
     }
   }

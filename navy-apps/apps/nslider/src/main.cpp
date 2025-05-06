@@ -24,14 +24,14 @@ void render() {
   if (slide) {
     SDL_FreeSurface(slide);
   }
-  printf("SDL_FreeSurface finish\n");
+  // printf("SDL_FreeSurface finish\n");
   char fname[256];
   sprintf(fname, path, cur);
   slide = SDL_LoadBMP(fname);
-  printf("SDL_LoadBMP finish\n");
+  // printf("SDL_LoadBMP finish\n");/
   assert(slide);
   SDL_UpdateRect(slide, 0, 0, 0, 0);
-  printf("SDL_UpdateRect finish\n");
+  // printf("SDL_UpdateRect finish\n");
 }
 
 void prev(int rep) {
@@ -50,15 +50,15 @@ void next(int rep) {
 
 int main() {
   SDL_Init(0);
-  printf("SDL_init finish\n");
+  // printf("SDL_init finish\n");
   SDL_Surface *screen = SDL_SetVideoMode(W, H, 32, SDL_HWSURFACE);
-  printf("SDL_SetVideoMode finish\n");
+  // printf("SDL_SetVideoMode finish\n");
 
   int rep = 0, g = 0;
 
   render();
 
-  printf("render finish\n");
+  // printf("render finish\n");
 
 
   while (1) {
