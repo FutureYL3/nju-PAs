@@ -27,6 +27,7 @@ size_t serial_write(const void *buf, size_t offset, size_t len) {
   return len;
 }
 
+extern int fg_pcb;
 size_t events_read(void *buf, size_t offset, size_t len) {
   if (len == 0)  return -1;
 
@@ -35,6 +36,22 @@ size_t events_read(void *buf, size_t offset, size_t len) {
   int keycode = kbd.keycode;
   /* no valid key event, return 0 and do nothing on `buf` */
   if (keycode == 0)  return 0;
+
+  /* bind F1~F3 to PCB1~3 */
+  switch (keycode) {
+    case AM_KEY_F1: {
+      fg_pcb = 1;
+      break;
+    }
+    case AM_KEY_F2: {
+      fg_pcb = 2;
+      break;
+    }
+    case AM_KEY_F3: {
+      fg_pcb = 3;
+      break;
+    }
+  }
 
   memset(buf, 0, len);
   const char *key_name = keyname[keycode];
