@@ -32,7 +32,7 @@ Context* __am_irq_handle(Context *c) {
       }
       default: ev.event = EVENT_ERROR; break;
     }
-    printf("enter __am_irq_handle %d times, cause is %d\n", count++, ev.event);
+    // printf("enter __am_irq_handle %d times, cause is %d\n", count++, ev.event);
 
     c = user_handler(ev, c);
     assert(c != NULL);
