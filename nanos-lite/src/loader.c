@@ -233,8 +233,8 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
 
   uintptr_t off   = (uintptr_t)p_end - (uintptr_t)pa_start;
   uintptr_t usp   = (uintptr_t)va_start + off;
-  // /* set GPRX to address of argc */
-  // context->GPRx = usp;
+  /* set GPRX to address of argc */
+  context->GPRx = usp;
   /* set c->sp */
   context->gpr[2] = usp;
   /* set context pointer */
