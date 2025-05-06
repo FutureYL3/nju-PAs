@@ -12,7 +12,6 @@ void __am_switch(Context *c);
 int count = 1;
 
 Context* __am_irq_handle(Context *c) {
-  printf("enter __am_irq_handle %d times\n", count++);
   /* save current satp value to the context that is to be switched */
   __am_get_cur_as(c);
   if (user_handler) {
@@ -33,6 +32,7 @@ Context* __am_irq_handle(Context *c) {
       }
       default: ev.event = EVENT_ERROR; break;
     }
+    printf("enter __am_irq_handle %d times, cause is %d\n", count++, ev.event);
 
     c = user_handler(ev, c);
     assert(c != NULL);
