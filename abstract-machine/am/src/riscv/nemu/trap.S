@@ -84,9 +84,9 @@ after_store_sp_np:
   LOAD t0, OFFSET_NP(sp)           # Load the value at OFFSET_NP(sp) into t0
   bnez t0, skip_restore_mscratch   # If t0 is not zero (next privilege is kernel), skip restoring mscratch
 
-  # If next privilege is user, restore user sp to mscratch for potential re-entry
-  addi t1, sp, CONTEXT_SIZE        # Calculate the original user sp before trap (current sp + CONTEXT_SIZE)
-  csrw mscratch, t1                # Write the calculated user sp back to mscratch
+  # If next privilege is user, restore kernel sp to mscratch
+  addi t1, sp, CONTEXT_SIZE        # Calculate the original kernel sp before trap (current sp + CONTEXT_SIZE)
+  csrw mscratch, t1                # Write the calculated kernel sp back to mscratch
 
 skip_restore_mscratch:
   # restore the context
