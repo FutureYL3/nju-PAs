@@ -9,7 +9,10 @@ void __am_switch(Context *c);
 
 #define IRQ_TIMER 0x80000007  // for riscv32
 
+int count = 1;
+
 Context* __am_irq_handle(Context *c) {
+  printf("enter __am_irq_handle %d times\n", count++);
   /* save current satp value to the context that is to be switched */
   __am_get_cur_as(c);
   if (user_handler) {
@@ -85,7 +88,7 @@ Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
 }
 
 void yield() {
-  printf("yield\n");
+  // printf("yield\n");
   asm volatile("li a7, -1; ecall");
 }
 
