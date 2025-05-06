@@ -52,7 +52,8 @@ bool cte_init(Context*(*handler)(Event, Context*)) {
   // initialize exception entry
   asm volatile("csrw mtvec, %0" : : "r"(__am_asm_trap));
   // initialize global kernal stack
-  asm volatile("csrw mscratch, %0" : : "r"(heap.end));
+  // TODO: determine the value of mscratch(kernal stack position)
+  asm volatile("csrw mscratch, %0" : : "r"((uintptr_t) heap.end - 1));
 
   // register event handler
   user_handler = handler;
