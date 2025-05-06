@@ -18,6 +18,7 @@ void call_main(uintptr_t *args) {
   environ = envp;
   /* call __libc_init_array to initialize cpp global object */
   __libc_init_array();
+  
   exit(main(argc, argv, envp));
   assert(0);
 }
