@@ -33,9 +33,9 @@ void init_proc() {
   char *const envp1[] = {NULL};
   context_uload(&pcb[0], "/bin/hello", argv1, envp1);
 
-  char *const argv2[] = {"/bin/nterm", NULL};
+  char *const argv2[] = {"/bin/pal", "--skip", NULL};
   char *const envp2[] = {NULL};
-  context_uload(&pcb[1], "/bin/nterm", argv2, envp2);
+  context_uload(&pcb[1], "/bin/pal", argv2, envp2);
   
   switch_boot_pcb();
   
