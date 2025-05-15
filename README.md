@@ -75,41 +75,41 @@
 
   ```c
   // ----------------------- TRM: Turing Machine -----------------------
-  extern   Area        heap;																			// 堆，程序运行时动态分配的内存区域
-  void     putch       (char ch);																	// 输出字符
-  void     halt        (int code) __attribute__((__noreturn__));	// 停机
-  void 		 _trm_init	 (void)																			// TRM初始化
+  extern   Area        heap;                                      // 堆，程序运行时动态分配的内存区域
+  void     putch       (char ch);                                 // 输出字符
+  void     halt        (int code) __attribute__((__noreturn__));  // 停机
+  void     _trm_init	 (void)                                     // TRM初始化
   ```
 
 - IOE(I/O Extension) - 输入输出扩展, 为程序提供输出输入的能力，包含如下 API
 
   ```c
   // -------------------- IOE: Input/Output Devices --------------------
-  bool     ioe_init    (void);								// IOE初始化
-  void     ioe_read    (int reg, void *buf);	// 从IO读入内容
-  void     ioe_write   (int reg, void *buf);	// 将内容写入IO
+  bool     ioe_init    (void);                // IOE初始化
+  void     ioe_read    (int reg, void *buf);  // 从IO读入内容
+  void     ioe_write   (int reg, void *buf);  // 将内容写入IO
   ```
 
 - CTE(Context Extension) - 上下文扩展, 为程序提供上下文管理的能力，包含如下 API
 
   ```c
   // ---------- CTE: Interrupt Handling and Context Switching ----------
-  bool     cte_init    (Context *(*handler)(Event ev, Context *ctx));		// CTE初始化
-  void     yield       (void);																					// 程序自陷
-  bool     ienabled    (void);																					// PA不使用
-  void     iset        (bool enable);																		// PA不使用
-  Context *kcontext    (Area kstack, void (*entry)(void *), void *arg);	// 内核进程上下文创建
+  bool     cte_init    (Context *(*handler)(Event ev, Context *ctx));   // CTE初始化
+  void     yield       (void);                                          // 程序自陷
+  bool     ienabled    (void);                                          // PA不使用
+  void     iset        (bool enable);                                   // PA不使用
+  Context *kcontext    (Area kstack, void (*entry)(void *), void *arg); // 内核进程上下文创建
   ```
 
 - VME(Virtual Memory Extension) - 虚存扩展, 为程序提供虚存管理的能力，包含如下 API
 
   ```c
   // ----------------------- VME: Virtual Memory -----------------------
-  bool     vme_init    (void *(*pgalloc)(int), void (*pgfree)(void *));			// VME初始化
-  void     protect     (AddrSpace *as);																			// 为用户进程创建地址空间
-  void     unprotect   (AddrSpace *as);																			// 销毁用户进程创建地址空间
-  void     map         (AddrSpace *as, void *vaddr, void *paddr, int prot);	// 进行虚拟-物理内存映射
-  Context *ucontext    (AddrSpace *as, Area kstack, void *entry);						// 用户进程上下文创建
+  bool     vme_init    (void *(*pgalloc)(int), void (*pgfree)(void *));     // VME初始化
+  void     protect     (AddrSpace *as);                                     // 为用户进程创建地址空间
+  void     unprotect   (AddrSpace *as);                                     // 销毁用户进程创建地址空间
+  void     map         (AddrSpace *as, void *vaddr, void *paddr, int prot); // 进行虚拟-物理内存映射
+  Context *ucontext    (AddrSpace *as, Area kstack, void *entry);           // 用户进程上下文创建
   ```
 
 - Klib (kernel library，兼容 libc 的常用库函数)
@@ -178,18 +178,18 @@
 
       ```c
       typedef struct {
-        char 	 *name;         	// 文件名
-        size_t 	size;        		// 文件大小
-        size_t 	disk_offset;  	// 文件在ramdisk中的偏移
-        ReadFn 	read;        		// 读函数指针
-        WriteFn write;      		// 写函数指针
+        char   *name;           // 文件名
+        size_t  size;           // 文件大小
+        size_t  disk_offset;    // 文件在ramdisk中的偏移
+        ReadFn  read;           // 读函数指针
+        WriteFn write;          // 写函数指针
       } Finfo;
       
-      int 		fs_open	(const char *pathname, int flags, int mode);
-      size_t 	fs_read	(int fd, void *buf, size_t len);
-      size_t 	fs_write(int fd, const void *buf, size_t len);
-      size_t 	fs_lseek(int fd, size_t offset, int whence);
-      int 		fs_close(int fd);
+      int     fs_open (const char *pathname, int flags, int mode);
+      size_t  fs_read (int fd, void *buf, size_t len);
+      size_t  fs_write(int fd, const void *buf, size_t len);
+      size_t  fs_lseek(int fd, size_t offset, int whence);
+      int     fs_close(int fd);
       ```
 
 - 9 个系统调用 (open, read, write, lseek, close, gettimeofday, brk, exit, execve)
