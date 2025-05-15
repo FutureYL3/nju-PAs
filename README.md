@@ -78,7 +78,7 @@
   extern   Area        heap;                                      // 堆，程序运行时动态分配的内存区域
   void     putch       (char ch);                                 // 输出字符
   void     halt        (int code) __attribute__((__noreturn__));  // 停机
-  void     _trm_init	 (void)                                     // TRM初始化
+  void     _trm_init   (void)                                     // TRM初始化
   ```
 
 - IOE(I/O Extension) - 输入输出扩展, 为程序提供输出输入的能力，包含如下 API
