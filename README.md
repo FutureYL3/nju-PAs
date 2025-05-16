@@ -194,9 +194,9 @@
 
 - 9 个系统调用 (open, read, write, lseek, close, gettimeofday, brk, exit, execve)
 
-- 进程 scheduler
+- 进程 Scheduler
 
-- 进程 loader
+- ELF Program Loader
 
 ### Navy-apps
 
@@ -250,13 +250,13 @@
 
 - sdb (simple debugger)
 - tracer
-  - itrace (instruction trace)
-  - iringbuf (instruction ring buffer)
-  - mtrace (memory trace)
-  - ftrace (function trace)
-  - dtrace (device trace)
-  - etrace (exception trace)
-  - strace (syscall trace)
+  - itrace (instruction trace)：跟踪 NEMU 中程序的指令执行路径
+  - iringbuf (instruction ring buffer)：itrace 的指令近场追踪
+  - mtrace (memory trace)：跟踪 NEMU 中程序的访存行为
+  - ftrace (function trace)：跟踪 NEMU 中程序的函数调用路径
+  - dtrace (device trace)：跟踪 NEMU 中程序的 IO 访问行为
+  - etrace (exception trace)：跟踪 NEMU 中程序的异常触发行为
+  - strace (syscall trace)：跟踪 NEMU 中程序的系统调用行为
 - AM native (Abstract Machine with host hardware, not NEMU)
 - Nanos-lite native (Nanos-lite with AM native)
 - Navy native (Navy with Linux native)
