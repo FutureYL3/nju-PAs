@@ -22,7 +22,9 @@
 
 ## 系统栈
 
-<img src="./README.assets/%E7%B3%BB%E7%BB%9F%E6%A0%88%E6%9E%B6%E6%9E%84.png" alt="系统栈架构" style="zoom:30%;" />
+<p align="center">
+  <img src="./README.assets/%E7%B3%BB%E7%BB%9F%E6%A0%88%E6%9E%B6%E6%9E%84.png" width="720" alt="system architecture">
+</p>
 
 ## 实现功能罗列
 
